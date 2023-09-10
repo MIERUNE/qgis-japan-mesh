@@ -15,7 +15,7 @@ jobs:
       OS: ubuntu
       QGIS_IMAGE_TAG: ${{ matrix.qgis_image_tag }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Pull QGIS image
         run: docker pull qgis/qgis:${{ matrix.qgis_image_tag }}
