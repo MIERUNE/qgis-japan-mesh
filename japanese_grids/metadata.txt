@@ -1,0 +1,23 @@
+[general]
+name=Japanese Grid Mesh
+version=0.0.1
+qgisMinimumVersion=3.6
+description=Create grid squares used in Japan. 日本で使われている「地域メッシュ」を作成します。
+author=MIERUNE Inc.
+email=info@mierune.co.jp
+
+about=Create grid squares used in Japan. Currently, only the "Grid Square Code" (JIS X 0410) is supported.
+
+tracker=https://github.com/qgis-japan-mesh/issues
+repository=https://github.com/MIERUNE/qgis-japan-mesh
+
+hasProcessingProvider=yes
+changelog=
+tags=python,processing
+
+homepage=https://github.com/MIERUNE/qgis-japan-mesh
+category=Plugins
+icon=icon.png
+experimental=False
+deprecated=False
+server=False

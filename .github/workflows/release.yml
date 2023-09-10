@@ -1,0 +1,28 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  Release:
+    name: Make zip package
+    runs-on: ubuntu-latest
+    env:
+      ASSET_NAME: ${{ github.event.repository.name }}-${{ github.event.release.tag_name }}.zip
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Zip plugin package
+        run: |
+          make package
+          mv dist/artifact-HEAD.zip dist/$ASSET_NAME
+
+      - name: Upload release asset
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload ${{ github.event.release.tag_name }} dist/$ASSET_NAME
