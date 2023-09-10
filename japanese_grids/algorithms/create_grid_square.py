@@ -78,6 +78,27 @@ _LAYERS = {
         "max_scale": 2000,
         "min_scale": 80000,
     },
+    "half": {
+        "param": "OUTPUT_HALF",
+        "default": False,
+        "label": _tr("2分の1地域メッシュ"),
+        "max_scale": 1000,
+        "min_scale": 40000,
+    },
+    "quarter": {
+        "param": "OUTPUT_QUARTER",
+        "default": False,
+        "label": _tr("4分の1地域メッシュ"),
+        "max_scale": 500,
+        "min_scale": 20000,
+    },
+    "eighth": {
+        "param": "OUTPUT_EIGHTH",
+        "default": False,
+        "label": _tr("8分の1地域メッシュ"),
+        "max_scale": 250,
+        "min_scale": 10000,
+    },
 }
 
 _CRS_SELECTION = {
@@ -191,6 +212,11 @@ class CreateGridSquareAlgorithm(QgsProcessingAlgorithm):
                 dest_ids[layer_kind_name] = dest_id
                 result[layer_kind["param"]] = dest_id
 
+                if layer_kind_name in ["quarter", "eighth"] and extent_bbox is None:
+                    raise QgsProcessingException(
+                        "1/4メッシュ、1/8メッシュを出力する場合は、思わぬ大量の地物の生成を防ぐため、メッシュの作成範囲を指定する必要があります。"
+                    )
+
         if not sinks:
             raise QgsProcessingException(
                 "地域メッシュの出力先が1つも選択されていません。\n利用したい地域メッシュの出力先を一時ファイルやファイルに切り替えて実行してください。"
@@ -203,12 +229,18 @@ class CreateGridSquareAlgorithm(QgsProcessingAlgorithm):
             primary="primary" in sinks,
             secondary="secondary" in sinks,
             standard="standard" in sinks,
+            half="half" in sinks,
+            quarter="quarter" in sinks,
+            eighth="eighth" in sinks,
         )
         for kind, code, bbox in iter_patch(
             extent=extent_bbox,
             primary="primary" in sinks,
             secondary="secondary" in sinks,
             standard="standard" in sinks,
+            half="half" in sinks,
+            quarter="quarter" in sinks,
+            eighth="eighth" in sinks,
         ):
             if feedback.isCanceled():
                 return {}
