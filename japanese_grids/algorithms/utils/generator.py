@@ -1,0 +1,302 @@
+from typing import Iterator, Optional, Tuple
+
+AVAILABLE_PRIMARY_CODE = frozenset(
+    [
+        "3036",
+        "3622",
+        "3623",
+        "3624",
+        "3631",
+        "3641",
+        "3653",
+        "3724",
+        "3725",
+        "3741",
+        "3823",
+        "3824",
+        "3831",
+        "3841",
+        "3926",
+        "3927",
+        "3928",
+        "3942",
+        "4027",
+        "4028",
+        "4040",
+        "4042",
+        "4128",
+        "4129",
+        "4142",
+        "4229",
+        "4230",
+        "4328",
+        "4329",
+        "4429",
+        "4440",
+        "4529",
+        "4530",
+        "4531",
+        "4540",
+        "4629",
+        "4630",
+        "4631",
+        "4728",
+        "4729",
+        "4730",
+        "4731",
+        "4739",
+        "4740",
+        "4828",
+        "4829",
+        "4830",
+        "4831",
+        "4839",
+        "4928",
+        "4929",
+        "4930",
+        "4931",
+        "4932",
+        "4933",
+        "4934",
+        "4939",
+        "5029",
+        "5030",
+        "5031",
+        "5032",
+        "5033",
+        "5034",
+        "5035",
+        "5036",
+        "5038",
+        "5039",
+        "5129",
+        "5130",
+        "5131",
+        "5132",
+        "5133",
+        "5134",
+        "5135",
+        "5136",
+        "5137",
+        "5138",
+        "5139",
+        "5229",
+        "5231",
+        "5232",
+        "5233",
+        "5234",
+        "5235",
+        "5236",
+        "5237",
+        "5238",
+        "5239",
+        "5240",
+        "5332",
+        "5333",
+        "5334",
+        "5335",
+        "5336",
+        "5337",
+        "5338",
+        "5339",
+        "5340",
+        "5432",
+        "5433",
+        "5435",
+        "5436",
+        "5437",
+        "5438",
+        "5439",
+        "5440",
+        "5531",
+        "5536",
+        "5537",
+        "5538",
+        "5539",
+        "5540",
+        "5541",
+        "5636",
+        "5637",
+        "5638",
+        "5639",
+        "5640",
+        "5641",
+        "5738",
+        "5739",
+        "5740",
+        "5741",
+        "5839",
+        "5840",
+        "5841",
+        "5939",
+        "5940",
+        "5941",
+        "5942",
+        "6039",
+        "6040",
+        "6041",
+        "6139",
+        "6140",
+        "6141",
+        "6239",
+        "6240",
+        "6241",
+        "6243",
+        "6339",
+        "6340",
+        "6341",
+        "6342",
+        "6343",
+        "6439",
+        "6440",
+        "6441",
+        "6442",
+        "6443",
+        "6444",
+        "6445",
+        "6540",
+        "6541",
+        "6542",
+        "6543",
+        "6544",
+        "6545",
+        "6546",
+        "6641",
+        "6642",
+        "6643",
+        "6644",
+        "6645",
+        "6646",
+        "6647",
+        "6740",
+        "6741",
+        "6742",
+        "6747",
+        "6748",
+        "6840",
+        "6841",
+        "6842",
+        "6847",
+        "6848",
+    ]
+)
+
+LngLatBox = Tuple[float, float, float, float]
+
+
+def _intersect(a: LngLatBox, b: LngLatBox):
+    a_lng0, a_lat0, a_lng1, a_lat1 = a
+    b_lng0, b_lat0, b_lng1, b_lat1 = b
+    return not (
+        a_lng1 < b_lng0 or a_lng0 > b_lng1 or a_lat1 < b_lat0 or a_lat0 > b_lat1
+    )
+
+
+def iter_primary_mesh_patch(
+    extent: Optional[LngLatBox] = None,
+) -> Iterator[tuple[str, LngLatBox]]:
+    """第1次地域区画"""
+    for y in range(30, 68 + 1):
+        lat0 = y / 1.5
+        lat1 = (y + 1) / 1.5
+        for x in range(22, 53 + 1):
+            lng0 = x + 100
+            code = f"{y:02d}{x:02d}"
+            if code in AVAILABLE_PRIMARY_CODE:
+                bbox = (lng0, lat0, lng0 + 1, lat1)
+                if extent is None or (_intersect(bbox, extent)):
+                    yield (code, bbox)
+
+
+def iter_secondary_mesh_patch(
+    primary_mesh_patch: tuple[str, LngLatBox], extent: Optional[LngLatBox] = None
+):
+    """第2次地域区画"""
+    parent_code, parent_bbox = primary_mesh_patch
+    parent_lng0, parent_lat0, parent_lng1, parent_lat1 = parent_bbox
+    sy = (parent_lat1 - parent_lat0) / 8
+    sx = (parent_lng1 - parent_lng0) / 8
+    for y in range(0, 8):
+        lat0 = sy * y + parent_lat0
+        prefix = parent_code + str(y)
+        for x in range(0, 8):
+            lng0 = sx * x + parent_lng0
+            bbox = (lng0, lat0, lng0 + sx, lat0 + sy)
+            if extent is None or _intersect(bbox, extent):
+                yield (prefix + str(x), bbox)
+
+
+def iter_standard_mesh_patch(
+    secondary_mesh_patch: tuple[str, LngLatBox], extent: Optional[LngLatBox] = None
+):
+    """基準地域メッシュ (第3次地域区画)"""
+    parent_code, parent_bbox = secondary_mesh_patch
+    parent_lng0, parent_lat0, parent_lng1, parent_lat1 = parent_bbox
+    sy = (parent_lat1 - parent_lat0) / 10
+    sx = (parent_lng1 - parent_lng0) / 10
+    for y in range(0, 10):
+        lat0 = sy * y + parent_lat0
+        prefix = parent_code + str(y)
+        for x in range(0, 10):
+            lng0 = sx * x + parent_lng0
+            bbox = (lng0, lat0, lng0 + sx, lat0 + sy)
+            if extent is None or _intersect(bbox, extent):
+                yield (prefix + str(x), bbox)
+
+
+def iter_subdivision_mesh_patch(
+    standard_mesh_patch: tuple[str, LngLatBox], type_name: str
+):
+    parent_code, parent_bbox = standard_mesh_patch
+    lng0, lat0, lng1, lat1 = parent_bbox
+    lath = (lat0 + lat1) / 2
+    lngh = (lng0 + lng1) / 2
+    yield (type_name, parent_code + "1", (lng0, lat0, lngh, lath))
+    yield (type_name, parent_code + "2", (lngh, lat0, lng1, lath))
+    yield (type_name, parent_code + "3", (lng0, lath, lngh, lat1))
+    yield (type_name, parent_code + "4", (lngh, lath, lng1, lat1))
+
+
+def iter_patch(
+    extent: Optional[LngLatBox] = None,
+    primary: bool = False,
+    secondary: bool = False,
+    standard: bool = False,
+) -> Iterator[tuple[str, str, LngLatBox]]:
+    """メッシュのパッチを返すイテレータを作る"""
+    for primary_mesh_patch in iter_primary_mesh_patch(extent=extent):
+        if primary:
+            yield ("primary", *primary_mesh_patch)
+        if not (secondary or standard):
+            continue
+
+        for secondary_mesh_patch in iter_secondary_mesh_patch(
+            primary_mesh_patch, extent
+        ):
+            if secondary:
+                yield ("secondary", *secondary_mesh_patch)
+            if not standard:
+                continue
+            for standard_mesh_patch in iter_standard_mesh_patch(
+                secondary_mesh_patch, extent
+            ):
+                yield ("standard", *standard_mesh_patch)
+
+
+def estimate_total_count(
+    extent: Optional[LngLatBox] = None,
+    primary: bool = False,
+    secondary: bool = False,
+    standard: bool = False,
+):
+    """生成されるパッチ数を推定する"""
+    num_primary = len(list(iter_primary_mesh_patch(extent=extent)))
+
+    c = 0
+    if primary:
+        c += num_primary
+    if secondary:
+        c += num_primary * 64  # (8*8)
+    if standard:
+        c += num_primary * 64 * 100  # (8*8) * (10*10)
+    return c

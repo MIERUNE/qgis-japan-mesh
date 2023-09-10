@@ -1,0 +1,51 @@
+[tool.poetry]
+name = "japanese_grids"
+version = "0.0.0"
+description = ""
+authors = ["MIERUNE Inc. <info@mierune.co.jp>"]
+readme = "README.md"
+packages = [{ include = "japanese_grids" }]
+
+[tool.poetry.dependencies]
+python = ">=3.8.1,<4.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.7.0"
+pytest = "^7.4.0"
+pytest-cov = "^4.1.0"
+pyqt5-stubs = { version = "^5.15.6.0", platform = "win32" }
+ruff = "^0.0.285"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+pythonpath = "."
+addopts = ["--import-mode=importlib"]
+# filterwarnings = "ignore::DeprecationWarning"
+
+[tool.ruff]
+select = [
+    "F",
+    "E",
+    "W",
+    "B",
+    "N",
+    "UP",
+    "I",
+    "C90",
+    "C4",
+    "DTZ",
+    "PIE",
+    "PT",
+    "Q",
+    "SIM",
+    "RUF",
+]
+ignore = ["N802", "E501"]
+target-version = "py38"
+
+[tool.coverage.run]
+source = ['japanese_grids']
+concurrency = ["thread"]
