@@ -14,7 +14,7 @@ black = "^23.7.0"
 pytest = "^7.4.0"
 pytest-cov = "^4.1.0"
 pyqt5-stubs = { version = "^5.15.6.0", platform = "win32" }
-ruff = "^0.0.285"
+ruff = "^0.0.287"
 
 [build-system]
 requires = ["poetry-core"]
