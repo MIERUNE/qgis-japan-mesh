@@ -244,30 +244,31 @@ def iter_standard_mesh_patch(
                 yield (prefix + str(x), bbox)
 
 
-def iter_subdivision_mesh_patch(
-    standard_mesh_patch: tuple[str, LngLatBox], type_name: str
-):
+def iter_subdivision_mesh_patch(standard_mesh_patch: tuple[str, LngLatBox]):
     parent_code, parent_bbox = standard_mesh_patch
     lng0, lat0, lng1, lat1 = parent_bbox
     lath = (lat0 + lat1) / 2
     lngh = (lng0 + lng1) / 2
-    yield (type_name, parent_code + "1", (lng0, lat0, lngh, lath))
-    yield (type_name, parent_code + "2", (lngh, lat0, lng1, lath))
-    yield (type_name, parent_code + "3", (lng0, lath, lngh, lat1))
-    yield (type_name, parent_code + "4", (lngh, lath, lng1, lat1))
+    yield (parent_code + "1", (lng0, lat0, lngh, lath))
+    yield (parent_code + "2", (lngh, lat0, lng1, lath))
+    yield (parent_code + "3", (lng0, lath, lngh, lat1))
+    yield (parent_code + "4", (lngh, lath, lng1, lat1))
 
 
-def iter_patch(
+def iter_patch(  # noqa: C901
     extent: Optional[LngLatBox] = None,
     primary: bool = False,
     secondary: bool = False,
     standard: bool = False,
+    half: bool = False,
+    quarter: bool = False,
+    eighth: bool = False,
 ) -> Iterator[tuple[str, str, LngLatBox]]:
     """メッシュのパッチを返すイテレータを作る"""
     for primary_mesh_patch in iter_primary_mesh_patch(extent=extent):
         if primary:
             yield ("primary", *primary_mesh_patch)
-        if not (secondary or standard):
+        if not (secondary or standard or half or quarter or eighth):
             continue
 
         for secondary_mesh_patch in iter_secondary_mesh_patch(
@@ -275,12 +276,24 @@ def iter_patch(
         ):
             if secondary:
                 yield ("secondary", *secondary_mesh_patch)
-            if not standard:
+            if not (standard or half or quarter or eighth):
                 continue
             for standard_mesh_patch in iter_standard_mesh_patch(
                 secondary_mesh_patch, extent
             ):
-                yield ("standard", *standard_mesh_patch)
+                if standard:
+                    yield ("standard", *standard_mesh_patch)
+                if half or quarter or eighth:
+                    for patch2 in iter_subdivision_mesh_patch(standard_mesh_patch):
+                        if half:
+                            yield ("half", *patch2)
+                        if quarter or eighth:
+                            for patch4 in iter_subdivision_mesh_patch(patch2):
+                                if quarter:
+                                    yield ("quarter", *patch4)
+                                if eighth:
+                                    for patch8 in iter_subdivision_mesh_patch(patch4):
+                                        yield ("eighth", *patch8)
 
 
 def estimate_total_count(
@@ -288,6 +301,9 @@ def estimate_total_count(
     primary: bool = False,
     secondary: bool = False,
     standard: bool = False,
+    half: bool = False,
+    quarter: bool = False,
+    eighth: bool = False,
 ):
     """生成されるパッチ数を推定する"""
     num_primary = len(list(iter_primary_mesh_patch(extent=extent)))
@@ -299,4 +315,10 @@ def estimate_total_count(
         c += num_primary * 64  # (8*8)
     if standard:
         c += num_primary * 64 * 100  # (8*8) * (10*10)
+    if half:
+        c += num_primary * 64 * 100 * 4  # (8*8) * (10*10)
+    if quarter:
+        c += num_primary * 64 * 100 * 4 * 4
+    if eighth:
+        c += num_primary * 64 * 100 * 4 * 4 * 4
     return c
