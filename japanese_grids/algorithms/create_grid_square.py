@@ -162,7 +162,7 @@ class CreateGridSquareAlgorithm(QgsProcessingAlgorithm):
     def shortHelpString(self) -> str:
         return _tr(_DESCRIPTION)
 
-    def processAlgorithm(
+    def processAlgorithm(  # noqa: C901
         self,
         parameters: dict[str, Any],
         context: QgsProcessingContext,
