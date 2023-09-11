@@ -1,8 +1,8 @@
 [general]
 name=Japanese Grid Mesh
-version=0.0.1
+version=0.0.2
 qgisMinimumVersion=3.6
-description=Create grid squares used in Japan. 日本で使われている「地域メッシュ」を作成します。
+description=Create grid squares used in Japan. 日本で使われている「地域メッシュ」を作成します。プロセッシングツールボックスから利用できます。
 author=MIERUNE Inc.
 email=info@mierune.co.jp
 

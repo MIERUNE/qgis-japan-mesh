@@ -1,6 +1,6 @@
 from typing import Iterator, Optional, Tuple
 
-AVAILABLE_PRIMARY_CODE = frozenset(
+AVAILABLE_PRIMARY_CODES = frozenset(
     [
         "3036",
         "3622",
@@ -202,7 +202,7 @@ def iter_primary_mesh_patch(
         for x in range(22, 53 + 1):
             lng0 = x + 100
             code = f"{y:02d}{x:02d}"
-            if code in AVAILABLE_PRIMARY_CODE:
+            if code in AVAILABLE_PRIMARY_CODES:
                 bbox = (lng0, lat0, lng0 + 1, lat1)
                 if extent is None or (_intersect(bbox, extent)):
                     yield (code, bbox)
