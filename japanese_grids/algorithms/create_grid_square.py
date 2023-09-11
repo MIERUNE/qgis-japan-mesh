@@ -42,7 +42,7 @@ from qgis.core import (
     QgsWkbTypes,
 )
 
-from .utils.generator import estimate_total_count, iter_patch
+from .utils.grid_square import estimate_total_count, iter_patch
 
 _DESCRIPTION = """日本の「地域メッシュ」 (JIS X 0410) をベクタレイヤとして作成します。
 
@@ -76,7 +76,7 @@ _LAYERS = {
     "standard": {
         "param": "OUTPUT_STANDARD",
         "default": False,
-        "label": _tr("基準地域メッシュ（第3次地域区画）"),  # noqa: RUF001
+        "label": _tr("基準地域メッシュ（第3次地域区画）"),
         "max_scale": 2000,
         "min_scale": 80000,
     },
@@ -103,12 +103,12 @@ _LAYERS = {
     },
 }
 
-_CRS_SELECTION = {
-    0: {"label": "日本測地系2011 (JGD2011)", "epsg": 6668},
-    1: {"label": "日本測地系2000 (JGD2000)", "epsg": 4612},
-    2: {"label": "世界測地系1984 (WGS 84)", "epsg": 4326},
-    3: {"label": "日本測地系 (Tokyo Datum)", "epsg": 4301},
-}
+_CRS_SELECTION = [
+    {"label": "日本測地系2011 (JGD2011)", "epsg": 6668},
+    {"label": "日本測地系2000 (JGD2000)", "epsg": 4612},
+    {"label": "世界測地系1984 (WGS 84)", "epsg": 4326},
+    {"label": "日本測地系 (Tokyo Datum)", "epsg": 4301},
+]
 
 
 class CreateGridSquareAlgorithm(QgsProcessingAlgorithm):
@@ -133,7 +133,7 @@ class CreateGridSquareAlgorithm(QgsProcessingAlgorithm):
             QgsProcessingParameterEnum(
                 self.GEOGRAPHIC_CRS,
                 _tr("地理座標系"),
-                options=[v["label"] for v in _CRS_SELECTION.values()],
+                options=[v["label"] for v in _CRS_SELECTION],
                 defaultValue=0,
             )
         )
@@ -150,7 +150,7 @@ class CreateGridSquareAlgorithm(QgsProcessingAlgorithm):
         return CreateGridSquareAlgorithm()
 
     def name(self):
-        return "create_grid_square"
+        return "creategridsquare"
 
     def group(self):
         return None
@@ -189,7 +189,7 @@ class CreateGridSquareAlgorithm(QgsProcessingAlgorithm):
 
         # Extent
         extent = self.parameterAsExtent(parameters, self.EXTENT, context, crs_to_assign)
-        if not extent.isNull():
+        if not extent.isEmpty():
             extent_bbox = (
                 extent.xMinimum(),
                 extent.yMinimum(),

@@ -22,14 +22,16 @@ from PyQt5.QtGui import QIcon
 from qgis.core import QgsProcessingProvider
 
 from .algorithms.create_grid_square import CreateGridSquareAlgorithm
+from .algorithms.create_legacy_grid import CreateLegacyGridAlgorithm
 
 
 class JapanMeshProcessingProvider(QgsProcessingProvider):
     def loadAlgorithms(self, *args, **kwargs):
         self.addAlgorithm(CreateGridSquareAlgorithm())
+        self.addAlgorithm(CreateLegacyGridAlgorithm())
 
     def id(self, *args, **kwargs):
-        return "japanese_grids"
+        return "japanesegrid"
 
     def name(self, *args, **kwargs):
         return self.tr("地域メッシュ")
