@@ -6,12 +6,12 @@ from qgis.core import QgsApplication  # , QgsVectorLayer
 
 def test_registered(qgis_app: QgsApplication, provider: str):
     registory = QgsApplication.processingRegistry()
-    provider = registory.providerById("japanese_grids")
+    provider = registory.providerById("japanesegrid")
     assert provider is not None
     assert len(provider.name()) > 0
     assert isinstance(provider.icon(), QIcon)
 
-    alg = registory.algorithmById("japanese_grids:create_grid_square")
+    alg = registory.algorithmById("japanesegrid:creategridsquare")
     assert alg is not None
     assert alg.group() is None
     assert alg.groupId() is None

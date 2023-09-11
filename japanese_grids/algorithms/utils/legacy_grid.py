@@ -21,7 +21,7 @@ def iter_lv50000_mesh_patch(
         for yi in range(8):
             cy = chr(ord("A") + yi)
             y = -160000 + 40000 * yi
-            bbox = (y, x, y + 40000, x + 30000)
+            bbox = (y, x - 30000, y + 40000, x)
             if extent is None or (_intersect(bbox, extent)):
                 yield (cx + cy, bbox)
 
