@@ -43,7 +43,7 @@ select = [
     "SIM",
     "RUF",
 ]
-ignore = ["N802", "E501"]
+ignore = ["N802", "E501", "RUF001"]
 target-version = "py38"
 
 [tool.coverage.run]
