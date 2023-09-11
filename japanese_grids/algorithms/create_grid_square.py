@@ -1,4 +1,4 @@
-"""Processing algorithm for generating Japan's Mesh"""
+"""Processing algorithm to create the "Grid Square Code" of Japan (JIS X 0410) as vector layers"""
 
 # Copyright (C) 2023 MIERUNE Inc.
 #
@@ -48,10 +48,10 @@ _DESCRIPTION = """日本の「地域メッシュ」 (JIS X 0410) をベクタレ
 
 作成したい種類のメッシュの出力先を「一時レイヤ」や「ファイル」に設定して、アルゴリズムを実行してください。
 
-デフォルトでは日本全域のメッシュを作成しますが、「メッシュの作成範囲」オプションで作成する範囲を制限できます。
+デフォルトでは日本全域のメッシュを作成しますが、「メッシュの作成範囲」オプションでメッシュの作成範囲を制限できます。
 
 なお、1/2地域メッシュより小さいメッシュについては、大量の地物生成を防ぐため、生成範囲を制限しないとアルゴリズムを実行できません。
-"""  # noqa: RUF001
+"""
 
 
 def _tr(string: str):
