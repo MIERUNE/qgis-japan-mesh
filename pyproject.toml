@@ -11,10 +11,10 @@ python = ">=3.8.1,<4.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.7.0"
-pytest = "^7.4.0"
+pytest = "^7.4.2"
 pytest-cov = "^4.1.0"
 pyqt5-stubs = { version = "^5.15.6.0", platform = "win32" }
-ruff = "^0.0.285"
+ruff = "^0.0.289"
 
 [build-system]
 requires = ["poetry-core"]
