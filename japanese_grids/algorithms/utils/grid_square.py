@@ -216,10 +216,10 @@ def iter_secondary_mesh_patch(
     parent_lng0, parent_lat0, parent_lng1, parent_lat1 = parent_bbox
     sy = (parent_lat1 - parent_lat0) / 8
     sx = (parent_lng1 - parent_lng0) / 8
-    for y in range(0, 8):
+    for y in range(8):
         lat0 = sy * y + parent_lat0
         prefix = parent_code + str(y)
-        for x in range(0, 8):
+        for x in range(8):
             lng0 = sx * x + parent_lng0
             bbox = (lng0, lat0, lng0 + sx, lat0 + sy)
             if extent is None or _intersect(bbox, extent):
@@ -234,10 +234,10 @@ def iter_standard_mesh_patch(
     parent_lng0, parent_lat0, parent_lng1, parent_lat1 = parent_bbox
     sy = (parent_lat1 - parent_lat0) / 10
     sx = (parent_lng1 - parent_lng0) / 10
-    for y in range(0, 10):
+    for y in range(10):
         lat0 = sy * y + parent_lat0
         prefix = parent_code + str(y)
-        for x in range(0, 10):
+        for x in range(10):
             lng0 = sx * x + parent_lng0
             bbox = (lng0, lat0, lng0 + sx, lat0 + sy)
             if extent is None or _intersect(bbox, extent):

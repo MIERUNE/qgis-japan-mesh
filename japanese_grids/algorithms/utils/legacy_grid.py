@@ -32,10 +32,10 @@ def iter_lv5000_mesh_patch(
     """地図情報レベル5000"""
     parent_code, parent_bbox = primary_mesh_patch
     parent_y0, parent_x0, _, _ = parent_bbox
-    for xi in range(0, 10):
+    for xi in range(10):
         x = -3000 * xi + parent_x0 + 30000
         prefix = parent_code + str(xi)
-        for yi in range(0, 10):
+        for yi in range(10):
             y = 4000 * yi + parent_y0
             bbox = (y, x - 3000, y + 4000, x)
             if extent is None or _intersect(bbox, extent):
@@ -62,10 +62,10 @@ def iter_lv1000_mesh_patch(
     """地図情報レベル1000"""
     parent_code, parent_bbox = primary_mesh_patch
     parent_y0, parent_x0, _, _ = parent_bbox
-    for xi in range(0, 5):
+    for xi in range(5):
         x = -600 * xi + parent_x0 + 3000
         prefix = parent_code + str(xi)
-        for yi in range(0, 5):
+        for yi in range(5):
             y = 800 * yi + parent_y0
             bbox = (y, x - 600, y + 800, x)
             cy = chr(ord("A") + yi)
@@ -79,10 +79,10 @@ def iter_lv500_mesh_patch(
     """地図情報レベル500"""
     parent_code, parent_bbox = primary_mesh_patch
     parent_y0, parent_x0, _, _ = parent_bbox
-    for xi in range(0, 10):
+    for xi in range(10):
         x = -300 * xi + parent_x0 + 3000
         prefix = parent_code + str(xi)
-        for yi in range(0, 10):
+        for yi in range(10):
             y = 400 * yi + parent_y0
             bbox = (y, x - 300, y + 400, x)
             if extent is None or _intersect(bbox, extent):
