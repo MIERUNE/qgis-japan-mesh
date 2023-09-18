@@ -23,18 +23,20 @@ from qgis.core import QgsProcessingProvider
 
 from .algorithms.create_grid_square import CreateGridSquareAlgorithm
 from .algorithms.create_legacy_grid import CreateLegacyGridAlgorithm
+from .algorithms.load_estat_csv import LoadEstatGridSquareStats
 
 
 class JapanMeshProcessingProvider(QgsProcessingProvider):
     def loadAlgorithms(self, *args, **kwargs):
         self.addAlgorithm(CreateGridSquareAlgorithm())
         self.addAlgorithm(CreateLegacyGridAlgorithm())
+        self.addAlgorithm(LoadEstatGridSquareStats())
 
     def id(self, *args, **kwargs):
         return "japanesegrid"
 
     def name(self, *args, **kwargs):
-        return self.tr("地域メッシュ")
+        return self.tr("地域メッシュツール")
 
     def icon(self):
         path = (Path(__file__).parent / "icon.png").resolve()
