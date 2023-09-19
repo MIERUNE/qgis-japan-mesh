@@ -25,6 +25,7 @@ from qgis.core import (
     QgsFeatureSink,
     QgsField,
     QgsFields,
+    QgsGeometry,
     QgsLineString,
     QgsPolygon,
     QgsProcessing,
@@ -134,7 +135,18 @@ class LoadEstatGridSquareStats(QgsProcessingAlgorithm):
     def _open_file(self, filename: str) -> TextIO:
         return open(filename, encoding="cp932")  # noqa: SIM115
 
-    def processAlgorithm(
+    def _bbox_to_polygon(self, bbox: tuple[float, float, float, float]) -> QgsPolygon:
+        lng0, lat0, lng1, lat1 = bbox
+        exterior = (
+            (lng0, lat0),
+            (lng0, lat1),
+            (lng1, lat1),
+            (lng1, lat0),
+            (lng0, lat0),
+        )
+        return QgsPolygon(QgsLineString(exterior))
+
+    def processAlgorithm(  # noqa: C901
         self,
         parameters: dict[str, Any],
         context: QgsProcessingContext,
@@ -181,7 +193,7 @@ class LoadEstatGridSquareStats(QgsProcessingAlgorithm):
                 self.OUTPUT,
                 context,
                 fields,
-                QgsWkbTypes.Polygon,
+                QgsWkbTypes.MultiPolygon,
                 crs_to_assign,
             )
             result[self.OUTPUT] = dest_id
@@ -192,30 +204,57 @@ class LoadEstatGridSquareStats(QgsProcessingAlgorithm):
                 for idx in range(len(columns))
                 if columns[idx] in ("KEY_CODE", "HTKSAKI", "GASSAN")
             ]
+
             num_columns = len(columns)
             key_code_idx = columns.index("KEY_CODE")
+            gassan_idx = columns.index("GASSAN")
+            htksyori_idx = columns.index("HTKSYORI")
+
             for row in _iter_rows(f):
                 feat = QgsFeature()
                 feat.setFields(fields, initAttributes=True)
                 assert len(row) == num_columns
+                geoms = []
+                skip = False
+
                 for idx, s in enumerate(row):
+                    # 秘匿処理されているパッチはスキップ
+                    if idx == htksyori_idx and s == "2":
+                        skip = True
+                        break
+
                     if s is None or s == "*":
                         continue
-                    if idx in str_fields:
-                        feat.setAttribute(idx, s)
-                    else:
-                        feat.setAttribute(idx, int(s))
-                    if idx == key_code_idx and (bbox := grid_square_code_to_bbox(s)):
-                        lng0, lat0, lng1, lat1 = bbox
-                        exterior = (
-                            (lng0, lat0),
-                            (lng0, lat1),
-                            (lng1, lat1),
-                            (lng1, lat0),
-                            (lng0, lat0),
+
+                    feat.setAttribute(
+                        idx,
+                        s if idx in str_fields else int(s),
+                    )
+
+                    # Geometry
+                    if idx == key_code_idx:
+                        if bbox := grid_square_code_to_bbox(s):
+                            geoms.append(self._bbox_to_polygon(bbox))
+                    elif idx == gassan_idx:
+                        bboxes = [grid_square_code_to_bbox(s) for s in s.split(";")]
+                        geoms.extend(
+                            self._bbox_to_polygon(bbox)
+                            for bbox in bboxes
+                            if bbox is not None
                         )
-                        geom = QgsPolygon(QgsLineString(exterior))
-                        feat.setGeometry(geom)
+
+                # 秘匿処理されているパッチはスキップ
+                if skip:
+                    continue
+
+                # パッチのジオメトリを作成
+                if len(geoms) == 1:
+                    feat.setGeometry(geoms[0])
+                elif len(geoms) > 1:
+                    # 合算されている場合はジオメトリを合成
+                    feat.setGeometry(
+                        QgsGeometry.unaryUnion(QgsGeometry(p) for p in geoms)
+                    )
 
                 sink.addFeature(feat, QgsFeatureSink.FastInsert)
 
