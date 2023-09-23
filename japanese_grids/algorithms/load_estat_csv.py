@@ -42,13 +42,13 @@ from qgis.core import (
 
 from .utils.gridsquare_to_box import grid_square_code_to_bbox
 
-_DESCRIPTION = """国勢調査や経済センサスなどの、日本の政府統計の綜合窓口 e-Stat (https://www.e-stat.go.jp/gis) で公開されている地域メッシュ統計のCSVファイルを読み込んで、ベクトルレイヤーとして出力します。"""
+_DESCRIPTION = """日本の政府統計の総合窓口 e-Stat (https://www.e-stat.go.jp/gis) で公開されている、国勢調査や経済センサスなどの地域メッシュ統計のCSVファイルを読み込んで、ベクタレイヤとして出力します。"""
 
 _CRS_SELECTION = [
-    {"label": "日本測地系2011 (JGD2011)", "epsg": 6668},
-    {"label": "日本測地系2000 (JGD2000)", "epsg": 4612},
-    {"label": "世界測地系1984 (WGS 84)", "epsg": 4326},
-    {"label": "日本測地系 (Tokyo Datum)", "epsg": 4301},
+    {"label": "日本測地系2011 (JGD2011, EPSG:6668)", "epsg": 6668},
+    {"label": "日本測地系2000 (JGD2000, EPSG:4612)", "epsg": 4612},
+    {"label": "世界測地系1984 (WGS 84, EPSG:4326)", "epsg": 4326},
+    {"label": "旧日本測地系 (Tokyo Datum, EPSG:4301)", "epsg": 4301},
 ]
 
 

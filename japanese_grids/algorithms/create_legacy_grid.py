@@ -278,7 +278,7 @@ class CreateLegacyGridAlgorithm(QgsProcessingAlgorithm):
                 self.PLANE_RECTANGULAR_NO,
                 _tr("平面直角座標系の系番号"),
                 options=[v["label"] for v in _PLANE_RECTANGULAR_PLANES],
-                defaultValue=0,
+                defaultValue=1,
             )
         )
 
