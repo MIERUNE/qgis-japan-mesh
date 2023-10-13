@@ -181,6 +181,8 @@ AVAILABLE_PRIMARY_CODES = frozenset(
     ]
 )
 
+MULTIPLIER = 30  # 浮動小数点誤差を回避するために内部的な経緯度にかける係数
+
 LngLatBox = Tuple[float, float, float, float]
 
 
@@ -188,27 +190,31 @@ def _intersect(a: LngLatBox, b: LngLatBox):
     a_lng0, a_lat0, a_lng1, a_lat1 = a
     b_lng0, b_lat0, b_lng1, b_lat1 = b
     return not (
-        a_lng1 < b_lng0 or a_lng0 > b_lng1 or a_lat1 < b_lat0 or a_lat0 > b_lat1
+        a_lng1 < b_lng0 * MULTIPLIER
+        or a_lng0 > b_lng1 * MULTIPLIER
+        or a_lat1 < b_lat0 * MULTIPLIER
+        or a_lat0 > b_lat1 * MULTIPLIER
     )
 
 
-def iter_primary_mesh_patch(
+def _iter_primary_mesh_patch(
     extent: Optional[LngLatBox] = None,
 ) -> Iterator[tuple[str, LngLatBox]]:
     """第1次地域区画"""
     for y in range(30, 68 + 1):
-        lat0 = y / 1.5
-        lat1 = (y + 1) / 1.5
+        lat0 = y * MULTIPLIER * 2 / 3
+        lat1 = (y + 1) * MULTIPLIER * 2 / 3
         for x in range(22, 53 + 1):
-            lng0 = x + 100
+            lng0 = (x + 100) * MULTIPLIER
+            lng1 = (x + 101) * MULTIPLIER
             code = f"{y:02d}{x:02d}"
             if code in AVAILABLE_PRIMARY_CODES:
-                bbox = (lng0, lat0, lng0 + 1, lat1)
+                bbox = (lng0, lat0, lng1, lat1)
                 if extent is None or (_intersect(bbox, extent)):
                     yield (code, bbox)
 
 
-def iter_secondary_mesh_patch(
+def _iter_secondary_mesh_patch(
     primary_mesh_patch: tuple[str, LngLatBox], extent: Optional[LngLatBox] = None
 ):
     """第2次地域区画"""
@@ -226,7 +232,7 @@ def iter_secondary_mesh_patch(
                 yield (prefix + str(x), bbox)
 
 
-def iter_standard_mesh_patch(
+def _iter_standard_mesh_patch(
     secondary_mesh_patch: tuple[str, LngLatBox], extent: Optional[LngLatBox] = None
 ):
     """基準地域メッシュ (第3次地域区画)"""
@@ -244,7 +250,7 @@ def iter_standard_mesh_patch(
                 yield (prefix + str(x), bbox)
 
 
-def iter_subdivided_mesh_patch(standard_mesh_patch: tuple[str, LngLatBox]):
+def _iter_subdivided_mesh_patch(standard_mesh_patch: tuple[str, LngLatBox]):
     parent_code, parent_bbox = standard_mesh_patch
     lng0, lat0, lng1, lat1 = parent_bbox
     lath = (lat0 + lat1) / 2
@@ -257,7 +263,47 @@ def iter_subdivided_mesh_patch(standard_mesh_patch: tuple[str, LngLatBox]):
     ]
 
 
-def iter_patch(  # noqa: C901
+def _iter_patch(  # noqa: C901
+    extent: Optional[LngLatBox] = None,
+    primary: bool = False,
+    secondary: bool = False,
+    standard: bool = False,
+    half: bool = False,
+    quarter: bool = False,
+    eighth: bool = False,
+) -> Iterator[tuple[str, str, LngLatBox]]:
+    for primary_mesh_patch in _iter_primary_mesh_patch(extent=extent):
+        if primary:
+            yield ("primary", *primary_mesh_patch)
+        if not (secondary or standard or half or quarter or eighth):
+            continue
+
+        for secondary_mesh_patch in _iter_secondary_mesh_patch(
+            primary_mesh_patch, extent
+        ):
+            if secondary:
+                yield ("secondary", *secondary_mesh_patch)
+            if not (standard or half or quarter or eighth):
+                continue
+            for standard_mesh_patch in _iter_standard_mesh_patch(
+                secondary_mesh_patch, extent
+            ):
+                if standard:
+                    yield ("standard", *standard_mesh_patch)
+                if half or quarter or eighth:
+                    for patch2 in _iter_subdivided_mesh_patch(standard_mesh_patch):
+                        if half:
+                            yield ("half", *patch2)
+                        if quarter or eighth:
+                            for patch4 in _iter_subdivided_mesh_patch(patch2):
+                                if quarter:
+                                    yield ("quarter", *patch4)
+                                if eighth:
+                                    for patch8 in _iter_subdivided_mesh_patch(patch4):
+                                        yield ("eighth", *patch8)
+
+
+def iter_patch(
     extent: Optional[LngLatBox] = None,
     primary: bool = False,
     secondary: bool = False,
@@ -267,35 +313,22 @@ def iter_patch(  # noqa: C901
     eighth: bool = False,
 ) -> Iterator[tuple[str, str, LngLatBox]]:
     """メッシュのパッチを返すイテレータを作る"""
-    for primary_mesh_patch in iter_primary_mesh_patch(extent=extent):
-        if primary:
-            yield ("primary", *primary_mesh_patch)
-        if not (secondary or standard or half or quarter or eighth):
-            continue
-
-        for secondary_mesh_patch in iter_secondary_mesh_patch(
-            primary_mesh_patch, extent
-        ):
-            if secondary:
-                yield ("secondary", *secondary_mesh_patch)
-            if not (standard or half or quarter or eighth):
-                continue
-            for standard_mesh_patch in iter_standard_mesh_patch(
-                secondary_mesh_patch, extent
-            ):
-                if standard:
-                    yield ("standard", *standard_mesh_patch)
-                if half or quarter or eighth:
-                    for patch2 in iter_subdivided_mesh_patch(standard_mesh_patch):
-                        if half:
-                            yield ("half", *patch2)
-                        if quarter or eighth:
-                            for patch4 in iter_subdivided_mesh_patch(patch2):
-                                if quarter:
-                                    yield ("quarter", *patch4)
-                                if eighth:
-                                    for patch8 in iter_subdivided_mesh_patch(patch4):
-                                        yield ("eighth", *patch8)
+    for kind, code, bbox in _iter_patch(
+        extent=extent,
+        primary=primary,
+        secondary=secondary,
+        standard=standard,
+        half=half,
+        quarter=quarter,
+        eighth=eighth,
+    ):
+        v0, v1, v2, v3 = bbox
+        yield kind, code, (
+            v0 / MULTIPLIER,
+            v1 / MULTIPLIER,
+            v2 / MULTIPLIER,
+            v3 / MULTIPLIER,
+        )
 
 
 def estimate_total_count(
@@ -308,7 +341,7 @@ def estimate_total_count(
     eighth: bool = False,
 ):
     """生成されるパッチ数の概数を返す"""
-    num_primary = len(list(iter_primary_mesh_patch(extent=extent)))
+    num_primary = len(list(_iter_primary_mesh_patch(extent=extent)))
 
     c = 0
     if primary:
