@@ -181,7 +181,7 @@ AVAILABLE_PRIMARY_CODES = frozenset(
     ]
 )
 
-MULTIPLIER = 30  # 浮動小数点誤差を回避するために内部的な経緯度にかける係数
+_MULTIPLIER = 30  # 浮動小数点誤差を回避するために内部的な経緯度にかける係数
 
 LngLatBox = Tuple[float, float, float, float]
 
@@ -190,10 +190,10 @@ def _intersect(a: LngLatBox, b: LngLatBox):
     a_lng0, a_lat0, a_lng1, a_lat1 = a
     b_lng0, b_lat0, b_lng1, b_lat1 = b
     return not (
-        a_lng1 < b_lng0 * MULTIPLIER
-        or a_lng0 > b_lng1 * MULTIPLIER
-        or a_lat1 < b_lat0 * MULTIPLIER
-        or a_lat0 > b_lat1 * MULTIPLIER
+        a_lng1 < b_lng0 * _MULTIPLIER
+        or a_lng0 > b_lng1 * _MULTIPLIER
+        or a_lat1 < b_lat0 * _MULTIPLIER
+        or a_lat0 > b_lat1 * _MULTIPLIER
     )
 
 
@@ -202,11 +202,11 @@ def _iter_primary_mesh_patch(
 ) -> Iterator[tuple[str, LngLatBox]]:
     """第1次地域区画"""
     for y in range(30, 68 + 1):
-        lat0 = y * MULTIPLIER * 2 / 3
-        lat1 = (y + 1) * MULTIPLIER * 2 / 3
+        lat0 = y * _MULTIPLIER * 2 / 3
+        lat1 = (y + 1) * _MULTIPLIER * 2 / 3
         for x in range(22, 53 + 1):
-            lng0 = (x + 100) * MULTIPLIER
-            lng1 = (x + 101) * MULTIPLIER
+            lng0 = (x + 100) * _MULTIPLIER
+            lng1 = (x + 101) * _MULTIPLIER
             code = f"{y:02d}{x:02d}"
             if code in AVAILABLE_PRIMARY_CODES:
                 bbox = (lng0, lat0, lng1, lat1)
@@ -324,10 +324,10 @@ def iter_patch(
     ):
         v0, v1, v2, v3 = bbox
         yield kind, code, (
-            v0 / MULTIPLIER,
-            v1 / MULTIPLIER,
-            v2 / MULTIPLIER,
-            v3 / MULTIPLIER,
+            v0 / _MULTIPLIER,
+            v1 / _MULTIPLIER,
+            v2 / _MULTIPLIER,
+            v3 / _MULTIPLIER,
         )
 
 
