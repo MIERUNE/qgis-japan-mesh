@@ -250,17 +250,23 @@ def _iter_standard_mesh_patch(
                 yield (prefix + str(x), bbox)
 
 
-def _iter_subdivided_mesh_patch(standard_mesh_patch: tuple[str, LngLatBox]):
+def _iter_subdivided_mesh_patch(
+    standard_mesh_patch: tuple[str, LngLatBox], extent: Optional[LngLatBox] = None
+):
+    """2分の1地域メッシュ、4分の1地域メッシュ、8分の1地域メッシュのための4分割"""
     parent_code, parent_bbox = standard_mesh_patch
     lng0, lat0, lng1, lat1 = parent_bbox
     lath = (lat0 + lat1) / 2
     lngh = (lng0 + lng1) / 2
-    return [
+    patches = [
         (parent_code + "1", (lng0, lat0, lngh, lath)),
         (parent_code + "2", (lngh, lat0, lng1, lath)),
         (parent_code + "3", (lng0, lath, lngh, lat1)),
         (parent_code + "4", (lngh, lath, lng1, lat1)),
     ]
+    if extent:
+        return [p for p in patches if _intersect(p[1], extent)]
+    return patches
 
 
 def _iter_patch(  # noqa: C901
@@ -291,15 +297,19 @@ def _iter_patch(  # noqa: C901
                 if standard:
                     yield ("standard", *standard_mesh_patch)
                 if half or quarter or eighth:
-                    for patch2 in _iter_subdivided_mesh_patch(standard_mesh_patch):
+                    for patch2 in _iter_subdivided_mesh_patch(
+                        standard_mesh_patch, extent
+                    ):
                         if half:
                             yield ("half", *patch2)
                         if quarter or eighth:
-                            for patch4 in _iter_subdivided_mesh_patch(patch2):
+                            for patch4 in _iter_subdivided_mesh_patch(patch2, extent):
                                 if quarter:
                                     yield ("quarter", *patch4)
                                 if eighth:
-                                    for patch8 in _iter_subdivided_mesh_patch(patch4):
+                                    for patch8 in _iter_subdivided_mesh_patch(
+                                        patch4, extent
+                                    ):
                                         yield ("eighth", *patch8)
 
 
