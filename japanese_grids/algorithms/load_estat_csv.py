@@ -127,7 +127,7 @@ class LoadEstatGridSquareStats(QgsProcessingAlgorithm):
         return None
 
     def displayName(self):
-        return _tr("地域メッシュ統計データを読み込む")
+        return _tr("地域メッシュ統計を読み込む")
 
     def shortHelpString(self) -> str:
         return _tr(_DESCRIPTION)
