@@ -36,7 +36,7 @@ class JapanMeshProcessingProvider(QgsProcessingProvider):
         return "japanesegrid"
 
     def name(self, *args, **kwargs):
-        return self.tr("地域メッシュツール")
+        return self.tr("地域メッシュ")
 
     def icon(self):
         path = (Path(__file__).parent / "icon.png").resolve()
