@@ -1,11 +1,18 @@
 # qgis-japan-mesh
 
+<p><img src="./japanese_grids/icon.png" width="32" alt="icon" /><p>
+
 [![Test](https://github.com/MIERUNE/qgis-japan-mesh/actions/workflows/test.yml/badge.svg)](https://github.com/MIERUNE/qgis-japan-mesh/actions/workflows/test.yml)
 
-A QGIS Plugin to handle common Japanese grid square codes — 日本で使われている「標準地域メッシュ」と「国土基本図図郭」を QGIS で扱うためのプラグインです。機能は以下の通り：
+A QGIS Plugin to handle common Japanese grid square codes — 日本で使われている「標準地域メッシュ」と「国土基本図図郭」を QGIS で扱うためのプラグインです。
 
-- 「標準地域メッシュ」と「国土基本図図郭」の生成
+主な機能：
+
+- 「標準地域メッシュ」の生成
+- 「国土基本図図郭」の生成
 - 「地域メッシュ統計」(e-Stat) の読み込み
+
+プロセッシングツールボックスに追加される「地域メッシュ」メニュー、またはツールバー上のアイコンから呼び出して利用できます。
 
 機能の要望を歓迎いたします。 GitHub の Issue にどうぞ。
 
