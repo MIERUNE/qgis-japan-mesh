@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from typing import Any, List, Optional, TypedDict, cast
+from typing import Any, List, TypedDict
 
 from PyQt5.QtCore import QCoreApplication, QVariant
 from qgis.core import (
@@ -32,12 +32,14 @@ from qgis.core import (
     QgsProcessing,
     QgsProcessingAlgorithm,
     QgsProcessingContext,
-    QgsProcessingException,  # pyright: ignore
+    QgsProcessingException,  # pyright: ignore  # pyright: ignore
     QgsProcessingFeedback,
+    QgsProcessingLayerPostProcessorInterface,
     QgsProcessingParameterEnum,
     QgsProcessingParameterExtent,
     QgsProcessingParameterFeatureSink,
-    QgsVectorLayer,
+    QgsTextBufferSettings,
+    QgsTextFormat,
     QgsVectorLayerSimpleLabeling,
     QgsWkbTypes,
 )
@@ -261,6 +263,10 @@ class CreateLegacyGridAlgorithm(QgsProcessingAlgorithm):
     DATUM_NO = "DATUM"
     PLANE_RECTANGULAR_NO = "PLANE_RECTANGULAR_NO"
 
+    def __init__(self) -> None:
+        super().__init__()
+        self.post_processors = {key: LayerStyler(key) for key in _LAYERS}
+
     def initAlgorithm(self, config=None):
         for layer_kind in _LAYERS.values():
             self.addParameter(
@@ -287,7 +293,7 @@ class CreateLegacyGridAlgorithm(QgsProcessingAlgorithm):
                 self.DATUM_NO,
                 _tr("測地系"),
                 options=[v["label"] for v in _DATUM_SELECTION],
-                defaultValue=0,
+                defaultValue=1,
             )
         )
 
@@ -317,7 +323,7 @@ class CreateLegacyGridAlgorithm(QgsProcessingAlgorithm):
     def shortHelpString(self) -> str:
         return _tr(_DESCRIPTION)
 
-    def processAlgorithm(  # noqa: C901
+    def processAlgorithm(
         self,
         parameters: dict[str, Any],
         context: QgsProcessingContext,
@@ -379,6 +385,11 @@ class CreateLegacyGridAlgorithm(QgsProcessingAlgorithm):
                         "地図情報レベル 1000, 500 を出力する場合は、思わぬ大量の地物生成を防ぐため、メッシュの作成範囲を指定する必要があります。"
                     )
 
+                # Set post-processor
+                if context.willLoadLayerOnCompletion(dest_id):
+                    comp = context.layerToLoadOnCompletionDetails(dest_id)
+                    comp.setPostProcessor(self.post_processors[layer_kind_name])
+
         if not sinks:
             raise QgsProcessingException(
                 "地図情報レベルの出力先が1つも選択されていません。\n利用したい地図情報レベルの出力先を一時ファイルやファイルに切り替えて実行してください。"
@@ -429,26 +440,35 @@ class CreateLegacyGridAlgorithm(QgsProcessingAlgorithm):
 
         feedback.setProgress(100)
 
-        # Label settings
-        for kind, dest_id in dest_ids.items():
-            layer = cast(
-                Optional[QgsVectorLayer],
-                context.temporaryLayerStore().mapLayer(dest_id),
-            )
-            if layer is None:
-                continue
-            layer_kind = _LAYERS[kind]
-            settings = QgsPalLayerSettings()
-            settings.fieldName = "code"
-            settings.placement = Qgis.LabelPlacement.OverPoint  # type: ignore
-            settings.centroidInside = False
-            settings.centroidWhole = True
-            settings.scaleVisibility = True
-            settings.maximumScale = layer_kind["max_scale"]
-            settings.minimumScale = layer_kind["min_scale"]
-            labeling = QgsVectorLayerSimpleLabeling(settings)
-            layer.setOpacity(0.5)
-            layer.setLabeling(labeling)
-            layer.setLabelsEnabled(True)
-
         return result
+
+
+class LayerStyler(QgsProcessingLayerPostProcessorInterface):
+    def __init__(self, kind: str):
+        self._kind = kind
+        super().__init__()
+
+    def postProcessLayer(self, layer, context, feedback):
+        if not layer.isValid():
+            return
+
+        layer_kind = _LAYERS[self._kind]
+        settings = QgsPalLayerSettings()
+        settings.fieldName = "code"
+        settings.placement = Qgis.LabelPlacement.OverPoint  # type: ignore
+        settings.centroidInside = False
+        settings.centroidWhole = True
+        settings.scaleVisibility = True
+        format = QgsTextFormat()
+        buffer = QgsTextBufferSettings()
+        buffer.setEnabled(True)
+        buffer.setSize(1)
+        buffer.setOpacity(0.75)
+        format.setBuffer(buffer)
+        settings.setFormat(format)
+        settings.maximumScale = layer_kind["max_scale"]
+        settings.minimumScale = layer_kind["min_scale"]
+        labeling = QgsVectorLayerSimpleLabeling(settings)
+        layer.setOpacity(0.5)
+        layer.setLabeling(labeling)
+        layer.setLabelsEnabled(True)
