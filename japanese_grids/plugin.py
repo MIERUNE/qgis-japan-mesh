@@ -41,7 +41,9 @@ class JapanMeshPlugin:
         if self.iface:
             tool_button = QToolButton()
             icon = self.provider.icon()
-            default_action = QAction(icon, "地域メッシュを作成", self.iface.mainWindow())
+            default_action = QAction(
+                icon, "地域メッシュを作成", self.iface.mainWindow()
+            )
             default_action.triggered.connect(
                 lambda: execAlgorithmDialog("japanesegrid:creategridsquare", {})
             )
@@ -51,7 +53,9 @@ class JapanMeshPlugin:
             tool_button.setMenu(menu)
             tool_button.setPopupMode(QToolButton.MenuButtonPopup)
 
-            action_grid_square = QAction(icon, "地域メッシュを作成", self.iface.mainWindow())
+            action_grid_square = QAction(
+                icon, "地域メッシュを作成", self.iface.mainWindow()
+            )
             action_grid_square.triggered.connect(
                 lambda: execAlgorithmDialog("japanesegrid:creategridsquare", {})
             )
@@ -63,7 +67,9 @@ class JapanMeshPlugin:
             )
             menu.addAction(action_legacy)
 
-            action_estat = QAction(icon, "地域メッシュ統計を読み込む", self.iface.mainWindow())
+            action_estat = QAction(
+                icon, "地域メッシュ統計を読み込む", self.iface.mainWindow()
+            )
             action_estat.triggered.connect(
                 lambda: execAlgorithmDialog("japanesegrid:loadestatgridstats", {})
             )

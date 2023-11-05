@@ -333,11 +333,15 @@ def iter_patch(
         eighth=eighth,
     ):
         v0, v1, v2, v3 = bbox
-        yield kind, code, (
-            v0 / _MULTIPLIER,
-            v1 / _MULTIPLIER,
-            v2 / _MULTIPLIER,
-            v3 / _MULTIPLIER,
+        yield (
+            kind,
+            code,
+            (
+                v0 / _MULTIPLIER,
+                v1 / _MULTIPLIER,
+                v2 / _MULTIPLIER,
+                v3 / _MULTIPLIER,
+            ),
         )
 
 

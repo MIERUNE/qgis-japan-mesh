@@ -42,8 +42,8 @@ jobs:
       # - name: pyright
       #   run: poetry run pyright .
 
-      - name: black
-        run: poetry run black --check --diff .
+      - name: ruff-format
+        run: poetry run ruff format --check .
 
       - name: ruff
-        run: poetry run ruff --format github .
+        run: poetry run ruff check --output-format github .
