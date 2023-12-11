@@ -59,8 +59,6 @@ def _tr(string: str):
 def _load_header(f):
     header = [s.strip() for s in f.readline().split(",")]
     alias_header = [s.strip() for s in f.readline().split(",")]
-    print(header)
-    print(alias_header)
     assert len(header) == len(alias_header)
     return header, alias_header
 
@@ -77,6 +75,7 @@ class LoadEstatGridSquareStats(QgsProcessingAlgorithm):
     INPUT = "INPUT"
     GEOGRAPHIC_CRS = "GEOGRAPHIC_CRS"
     LABEL = "LABEL"
+    HTKSYORI = "HTKSYORI"
     OUTPUT = "OUTPUT"
 
     def initAlgorithm(self, config=None):
@@ -100,7 +99,15 @@ class LoadEstatGridSquareStats(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterBoolean(
                 self.LABEL,
-                _tr("カラムに日本語ラベルを付与"),
+                _tr("カラム名に日本語を付与"),
+                defaultValue=True,
+            )
+        )
+
+        self.addParameter(
+            QgsProcessingParameterBoolean(
+                self.HTKSYORI,
+                _tr("秘匿対象地域を併合する"),
                 defaultValue=True,
             )
         )
@@ -162,6 +169,8 @@ class LoadEstatGridSquareStats(QgsProcessingAlgorithm):
             _CRS_SELECTION[crs_no]["epsg"]
         )
 
+        merge_hitoku = self.parameterAsBool(parameters, self.HTKSYORI, context)
+
         # Input CSV file
         filename = self.parameterAsFile(parameters, self.INPUT, context)
         if filename is None:
@@ -174,6 +183,10 @@ class LoadEstatGridSquareStats(QgsProcessingAlgorithm):
         # Load data
         label = self.parameterAsBool(parameters, self.LABEL, context)
         fields = QgsFields()
+        patches = {}
+
+        # TODO: refactor
+
         with open(filename, encoding="cp932") as f:
             columns, aliases = _load_header(f)
             # Make fields
@@ -199,63 +212,95 @@ class LoadEstatGridSquareStats(QgsProcessingAlgorithm):
             result[self.OUTPUT] = dest_id
 
             # Load rows
-            str_fields = [
+            str_field_indexes = [
                 idx
                 for idx in range(len(columns))
                 if columns[idx] in ("KEY_CODE", "HTKSAKI", "GASSAN")
             ]
 
             num_columns = len(columns)
-            key_code_idx = columns.index("KEY_CODE")
-            gassan_idx = columns.index("GASSAN")
-            htksyori_idx = columns.index("HTKSYORI")
+            key_code_column_idx = columns.index("KEY_CODE")
+            try:
+                gassan_column_idx = columns.index("GASSAN")
+                htksyori_column_idx = columns.index("HTKSYORI")
+                htksaki_column_idx = columns.index("HTKSAKI")
+            except ValueError:
+                gassan_column_idx = None
+                htksyori_column_idx = None
+                htksaki_column_idx = None
 
+            # Scan all source entries
             for row in _iter_rows(f):
-                feat = QgsFeature()
-                feat.setFields(fields, initAttributes=True)
                 assert len(row) == num_columns
-                geoms = []
-                skip = False
-
+                key_code = None
+                patch_attrs: list = [None] * num_columns
                 for idx, s in enumerate(row):
-                    # 秘匿処理されているパッチはスキップ
-                    if idx == htksyori_idx and s == "2":
-                        skip = True
-                        break
-
                     if s is None or s == "*":
-                        continue
+                        patch_attrs[idx] = None
+                    else:
+                        patch_attrs[idx] = s if idx in str_field_indexes else int(s)
 
-                    feat.setAttribute(
-                        idx,
-                        s if idx in str_fields else int(s),
-                    )
+                    if idx == key_code_column_idx:
+                        key_code = s
 
-                    # Geometry
-                    if idx == key_code_idx:
-                        if bbox := grid_square_code_to_bbox(s):
-                            geoms.append(self._bbox_to_polygon(bbox))
-                    elif idx == gassan_idx:
-                        bboxes = [grid_square_code_to_bbox(s) for s in s.split(";")]
-                        geoms.extend(
-                            self._bbox_to_polygon(bbox)
-                            for bbox in bboxes
-                            if bbox is not None
-                        )
+                assert key_code is not None
+                patches[key_code] = patch_attrs
 
-                # 秘匿処理されているパッチはスキップ
-                if skip:
+        value_column_indexes = set(range(num_columns)) - {
+            key_code_column_idx,
+            gassan_column_idx,
+            htksyori_column_idx,
+            htksaki_column_idx,
+        }
+
+        # Generate QGIS features
+        for patch_attrs in patches.values():
+            # GASSAN (HTKSYORI)
+            if merge_hitoku and (
+                htksyori_column_idx is not None and gassan_column_idx is not None
+            ):
+                if patch_attrs[htksyori_column_idx] == 2:
                     continue
 
-                # パッチのジオメトリを作成
-                if len(geoms) == 1:
-                    feat.setGeometry(geoms[0])
-                elif len(geoms) > 1:
-                    # 合算されている場合はジオメトリを合成
-                    feat.setGeometry(
-                        QgsGeometry.unaryUnion(QgsGeometry(p) for p in geoms)
+                if gassan := patch_attrs[gassan_column_idx]:
+                    for gassan_area_code in gassan.split(";"):
+                        merging_patch = patches[gassan_area_code]
+                        for idx in value_column_indexes:
+                            if (v := merging_patch[idx]) is not None:
+                                patch_attrs[idx] += v
+
+            geoms = []
+            feat = QgsFeature()
+            feat.setFields(fields, initAttributes=True)
+
+            for idx, s in enumerate(patch_attrs):
+                if s is None:
+                    continue
+
+                feat.setAttribute(
+                    idx,
+                    s if idx in str_field_indexes else int(s),
+                )
+
+                # Geometry
+                if idx == key_code_column_idx:
+                    if bbox := grid_square_code_to_bbox(s):
+                        geoms.append(self._bbox_to_polygon(bbox))
+                elif merge_hitoku and idx == gassan_column_idx:
+                    bboxes = [grid_square_code_to_bbox(s) for s in s.split(";")]
+                    geoms.extend(
+                        self._bbox_to_polygon(bbox)
+                        for bbox in bboxes
+                        if bbox is not None
                     )
 
-                sink.addFeature(feat, QgsFeatureSink.FastInsert)
+            # パッチのジオメトリを作成
+            if len(geoms) == 1:
+                feat.setGeometry(geoms[0])
+            elif len(geoms) > 1:
+                # 合算されている場合はジオメトリを合成
+                feat.setGeometry(QgsGeometry.unaryUnion(QgsGeometry(p) for p in geoms))
+
+            sink.addFeature(feat, QgsFeatureSink.FastInsert)
 
         return {}
