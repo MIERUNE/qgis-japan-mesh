@@ -13,10 +13,10 @@ packages = [{ include = "japanese_grids" }]
 python = ">=3.8.1,<4.0"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.0"
-pytest-cov = "^4.1"
+pytest = "^8"
+pytest-cov = "^4"
 pyqt5-stubs = { version = "^5", platform = "win32" }
-ruff = "^0.1"
+ruff = "^0"
 
 [build-system]
 requires = ["poetry-core"]
