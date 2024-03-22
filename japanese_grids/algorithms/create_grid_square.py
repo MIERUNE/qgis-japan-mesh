@@ -254,15 +254,17 @@ class CreateGridSquareAlgorithm(QgsProcessingAlgorithm):
             quarter="quarter" in sinks,
             eighth="eighth" in sinks,
         )
-        for count, (kind, code, bbox) in enumerate(iter_patch(
-            extent=extent_bbox,
-            primary="primary" in sinks,
-            secondary="secondary" in sinks,
-            standard="standard" in sinks,
-            half="half" in sinks,
-            quarter="quarter" in sinks,
-            eighth="eighth" in sinks,
-        )):
+        for count, (kind, code, bbox) in enumerate(
+            iter_patch(
+                extent=extent_bbox,
+                primary="primary" in sinks,
+                secondary="secondary" in sinks,
+                standard="standard" in sinks,
+                half="half" in sinks,
+                quarter="quarter" in sinks,
+                eighth="eighth" in sinks,
+            )
+        ):
             if feedback.isCanceled():
                 return {}
 

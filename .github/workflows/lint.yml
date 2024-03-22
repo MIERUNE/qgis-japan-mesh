@@ -30,8 +30,8 @@ jobs:
       # - name: pyright
       #   run: poetry run pyright .
 
-      - name: ruff-format
+      - name: Ruff (format)
         run: poetry run ruff format --check .
 
-      - name: ruff
+      - name: Ruff (lint)
         run: poetry run ruff check --output-format github .
