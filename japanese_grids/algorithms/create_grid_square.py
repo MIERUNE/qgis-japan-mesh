@@ -245,7 +245,6 @@ class CreateGridSquareAlgorithm(QgsProcessingAlgorithm):
             )
 
         # Generate square patches
-        count = 0
         total_count = estimate_total_count(
             extent=extent_bbox,
             primary="primary" in sinks,
@@ -255,7 +254,7 @@ class CreateGridSquareAlgorithm(QgsProcessingAlgorithm):
             quarter="quarter" in sinks,
             eighth="eighth" in sinks,
         )
-        for kind, code, bbox in iter_patch(
+        for count, (kind, code, bbox) in enumerate(iter_patch(
             extent=extent_bbox,
             primary="primary" in sinks,
             secondary="secondary" in sinks,
@@ -263,7 +262,7 @@ class CreateGridSquareAlgorithm(QgsProcessingAlgorithm):
             half="half" in sinks,
             quarter="quarter" in sinks,
             eighth="eighth" in sinks,
-        ):
+        )):
             if feedback.isCanceled():
                 return {}
 
@@ -286,7 +285,6 @@ class CreateGridSquareAlgorithm(QgsProcessingAlgorithm):
 
             sink = sinks[kind]
             sink.addFeature(feat, QgsFeatureSink.FastInsert)
-            count += 1
 
         feedback.setProgress(100)
 

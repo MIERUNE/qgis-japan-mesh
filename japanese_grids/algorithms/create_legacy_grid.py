@@ -396,7 +396,6 @@ class CreateLegacyGridAlgorithm(QgsProcessingAlgorithm):
             )
 
         # Generate square patches
-        count = 0
         total_count = estimate_total_count(
             extent=extent_bbox,
             lv50000="lv50000" in sinks,
@@ -406,14 +405,14 @@ class CreateLegacyGridAlgorithm(QgsProcessingAlgorithm):
             lv500="lv500" in sinks,
         )
         prefix = _PLANE_RECTANGULAR_PLANES[plane_rectangular_no]["prefix"]
-        for kind, code, bbox in iter_patch(
+        for count, (kind, code, bbox) in enumerate(iter_patch(
             extent=extent_bbox,
             lv50000="lv50000" in sinks,
             lv5000="lv5000" in sinks,
             lv2500="lv2500" in sinks,
             lv1000="lv1000" in sinks,
             lv500="lv500" in sinks,
-        ):
+        )):
             if feedback.isCanceled():
                 return {}
 
@@ -436,7 +435,6 @@ class CreateLegacyGridAlgorithm(QgsProcessingAlgorithm):
 
             sink = sinks[kind]
             sink.addFeature(feat, QgsFeatureSink.FastInsert)
-            count += 1
 
         feedback.setProgress(100)
 
