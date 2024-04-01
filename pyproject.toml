@@ -14,7 +14,7 @@ python = ">=3.8.1,<4.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8"
-pytest-cov = "^4"
+pytest-cov = "^5"
 pyqt5-stubs = { version = "^5", platform = "win32" }
 ruff = "^0"
 
