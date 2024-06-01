@@ -13,9 +13,9 @@ packages = [{ include = "japanese_grids" }]
 python = ">=3.8.1,<4.0"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8"
-pytest-cov = "^4"
-pyqt5-stubs = { version = "^5", platform = "win32" }
+pytest = "^8.2"
+pytest-cov = "^5.0"
+pyqt5-stubs = "^5.15"
 ruff = "^0"
 
 [build-system]
