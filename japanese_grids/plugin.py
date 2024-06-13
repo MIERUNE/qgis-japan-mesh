@@ -39,6 +39,7 @@ class JapanMeshPlugin:
         QgsApplication.processingRegistry().addProvider(self.provider)
 
         if self.iface:
+            # Add a button on the toolbar
             tool_button = QToolButton()
             icon = self.provider.icon()
             default_action = QAction(
@@ -49,6 +50,7 @@ class JapanMeshPlugin:
             )
             tool_button.setDefaultAction(default_action)
 
+            # ToolButton Menu
             menu = QMenu()
             tool_button.setMenu(menu)
             tool_button.setPopupMode(QToolButton.MenuButtonPopup)
