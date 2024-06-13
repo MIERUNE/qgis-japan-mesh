@@ -59,9 +59,15 @@ _DESCRIPTION = """日本の「地域メッシュ」 (JIS X 0410) をベクタレ
 - 第1次地域区画: 約80km四方、4桁
 - 第2次地域区画: 約10km四方、6桁
 - 基準地域メッシュ（第3次地域区画）: 約1km四方、8桁
+
+分割地域メッシュ：
 - 2分の1地域メッシュ: 約500m四方、9桁
 - 4分の1地域メッシュ: 約250m四方、10桁
 - 8分の1地域メッシュ: 約125m四方、11桁
+
+統合地域メッシュ：
+- 5倍地域メッシュ: 約5km四方、7桁
+- 2倍地域メッシュ: 約2km四方、9桁
 """
 
 
@@ -111,6 +117,20 @@ _LAYERS = {
         "label": _tr("8分の1地域メッシュ"),
         "max_scale": 250,
         "min_scale": 10000,
+    },
+    "quintuple": {
+        "param": "OUTPUT_QUINTUPLE",
+        "default": False,
+        "label": _tr("5倍地域メッシュ"),
+        "max_scale": 10000,
+        "min_scale": 400000,
+    },
+    "double": {
+        "param": "OUTPUT_DOUBLE",
+        "default": False,
+        "label": _tr("2倍地域メッシュ"),
+        "max_scale": 4000,
+        "min_scale": 120000,
     },
 }
 
@@ -253,6 +273,8 @@ class CreateGridSquareAlgorithm(QgsProcessingAlgorithm):
             half="half" in sinks,
             quarter="quarter" in sinks,
             eighth="eighth" in sinks,
+            double="double" in sinks,
+            quintuple="quintuple" in sinks,
         )
         for count, (kind, code, bbox) in enumerate(
             iter_patch(
@@ -263,6 +285,8 @@ class CreateGridSquareAlgorithm(QgsProcessingAlgorithm):
                 half="half" in sinks,
                 quarter="quarter" in sinks,
                 eighth="eighth" in sinks,
+                double="double" in sinks,
+                quintuple="quintuple" in sinks,
             )
         ):
             if feedback.isCanceled():

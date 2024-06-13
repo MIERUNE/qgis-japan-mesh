@@ -251,10 +251,10 @@ def _iter_standard_mesh_patch(
 
 
 def _iter_subdivided_mesh_patch(
-    standard_mesh_patch: tuple[str, LngLatBox], extent: Optional[LngLatBox] = None
+    parent_mesh_patch: tuple[str, LngLatBox], extent: Optional[LngLatBox] = None
 ):
-    """2分の1地域メッシュ、4分の1地域メッシュ、8分の1地域メッシュのための4分割"""
-    parent_code, parent_bbox = standard_mesh_patch
+    """2分の1地域メッシュ、4分の1地域メッシュ、8分の1地域メッシュ、5倍地域メッシュのための4分割"""
+    parent_code, parent_bbox = parent_mesh_patch
     lng0, lat0, lng1, lat1 = parent_bbox
     lath = (lat0 + lat1) / 2
     lngh = (lng0 + lng1) / 2
@@ -269,6 +269,24 @@ def _iter_subdivided_mesh_patch(
     return patches
 
 
+def _iter_double_mesh_patch(
+    secondary_mesh_patch: tuple[str, LngLatBox], extent: Optional[LngLatBox] = None
+):
+    """2倍地域メッシュ"""
+    parent_code, parent_bbox = secondary_mesh_patch
+    parent_lng0, parent_lat0, parent_lng1, parent_lat1 = parent_bbox
+    sy = (parent_lat1 - parent_lat0) / 5
+    sx = (parent_lng1 - parent_lng0) / 5
+    for y in range(5):
+        lat0 = sy * y + parent_lat0
+        prefix = parent_code + str(y * 2)
+        for x in range(5):
+            lng0 = sx * x + parent_lng0
+            bbox = (lng0, lat0, lng0 + sx, lat0 + sy)
+            if extent is None or _intersect(bbox, extent):
+                yield (prefix + str(x * 2) + "5", bbox)
+
+
 def _iter_patch(  # noqa: C901
     extent: Optional[LngLatBox] = None,
     primary: bool = False,
@@ -277,11 +295,15 @@ def _iter_patch(  # noqa: C901
     half: bool = False,
     quarter: bool = False,
     eighth: bool = False,
+    double: bool = False,
+    quintuple: bool = False,
 ) -> Iterator[tuple[str, str, LngLatBox]]:
     for primary_mesh_patch in _iter_primary_mesh_patch(extent=extent):
         if primary:
             yield ("primary", *primary_mesh_patch)
-        if not (secondary or standard or half or quarter or eighth):
+        if not (
+            secondary or standard or half or quarter or eighth or quintuple or double
+        ):
             continue
 
         for secondary_mesh_patch in _iter_secondary_mesh_patch(
@@ -289,6 +311,19 @@ def _iter_patch(  # noqa: C901
         ):
             if secondary:
                 yield ("secondary", *secondary_mesh_patch)
+
+            if quintuple:
+                for quintuple_mesh_patch in _iter_subdivided_mesh_patch(
+                    secondary_mesh_patch, extent
+                ):
+                    yield ("quintuple", *quintuple_mesh_patch)
+
+            if double:
+                for double_mesh_patch in _iter_double_mesh_patch(
+                    secondary_mesh_patch, extent
+                ):
+                    yield ("double", *double_mesh_patch)
+
             if not (standard or half or quarter or eighth):
                 continue
             for standard_mesh_patch in _iter_standard_mesh_patch(
@@ -321,6 +356,8 @@ def iter_patch(
     half: bool = False,
     quarter: bool = False,
     eighth: bool = False,
+    double: bool = False,
+    quintuple: bool = False,
 ) -> Iterator[tuple[str, str, LngLatBox]]:
     """メッシュのパッチを返すイテレータを作る"""
     for kind, code, bbox in _iter_patch(
@@ -331,6 +368,8 @@ def iter_patch(
         half=half,
         quarter=quarter,
         eighth=eighth,
+        double=double,
+        quintuple=quintuple,
     ):
         v0, v1, v2, v3 = bbox
         yield (
@@ -353,8 +392,10 @@ def estimate_total_count(
     half: bool = False,
     quarter: bool = False,
     eighth: bool = False,
+    double: bool = False,
+    quintuple: bool = False,
 ):
-    """生成されるパッチ数の概数を返す"""
+    """生成されるパッチ数の概数を返す (プログレスバーのため)"""
     num_primary = len(list(_iter_primary_mesh_patch(extent=extent)))
 
     c = 0
@@ -364,6 +405,10 @@ def estimate_total_count(
         c += num_primary * 64  # (8*8)
     if standard:
         c += num_primary * 64 * 100  # (8*8) * (10*10)
+    if double:
+        c += num_primary * 64 * 25  # (8*8) * (5*5)
+    if quintuple:
+        c += num_primary * 64 * 4  # (8*8) * (2*2)
     if half:
         c += num_primary * 64 * 100 * 4  # (8*8) * (10*10)
     if quarter:
