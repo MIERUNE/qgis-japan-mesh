@@ -24,6 +24,7 @@ def grid_square_code_to_bbox(  # noqa: C901
     if length == 6:
         return (lng, lat / 1.5, lng + 0.125, (lat + 0.125) / 1.5)
 
+    # 1km
     lat10 = int(code[6]) * 0.125
     lng10 = int(code[7]) * 0.125
     if length == 8:
@@ -31,8 +32,9 @@ def grid_square_code_to_bbox(  # noqa: C901
         lng1 = lng + lng10 / 10
         lat2 = lat + (lat10 + 0.125) / 10
         lng2 = lng + (lng10 + 0.125) / 10
-        return (lng1, lat1 / 1.5, lng, lat / 1.5)
+        return (lng1, lat1 / 1.5, lng2, lat2 / 1.5)
 
+    # 1/2 (500m)
     a = code[8]
     if a not in _VALID_QUAD:
         return None
@@ -47,6 +49,7 @@ def grid_square_code_to_bbox(  # noqa: C901
         lng2 = lng + (lng10 + 0.0625) / 10
         return (lng1, lat1 / 1.5, lng2, lat2 / 1.5)
 
+    # 1/4 (250m)
     a = code[9]
     if a not in _VALID_QUAD:
         return None
@@ -61,6 +64,7 @@ def grid_square_code_to_bbox(  # noqa: C901
         lng2 = lng + (lng10 + 0.03125) / 10
         return (lng1, lat1 / 1.5, lng2, lat2 / 1.5)
 
+    # 1/8 (125m)
     a = code[10]
     if a not in _VALID_QUAD:
         return None
