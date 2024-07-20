@@ -1,9 +1,13 @@
-from typing import Optional, Tuple
+from typing import Optional, Tuple, TypedDict
+
+from .grid_square import AVAILABLE_PRIMARY_CODES
 
 _VALID_LENGTH = (4, 6, 8, 9, 10, 11)
 _VALID_QUAD = ("1", "2", "3", "4")
 
 LngLatBox = Tuple[float, float, float, float]
+
+_MULTIPLIER = 30  # 浮動小数点誤差を回避するために内部的な経緯度にかける係数
 
 
 def grid_square_code_to_bbox(  # noqa: C901
@@ -77,3 +81,63 @@ def grid_square_code_to_bbox(  # noqa: C901
     lat2 = lat + (lat10 + 0.015625) / 10
     lng2 = lng + (lng10 + 0.015625) / 10
     return (lng1, lat1 / 1.5, lng2, lat2 / 1.5)
+
+
+class Codes(TypedDict):
+    primary: str
+    secondary: str
+    standard: str
+    half: str
+    quarter: str
+    eighth: str
+
+
+def lnglat_to_grid_square_code(lng: float, lat: float) -> Optional[Codes]:
+    lat *= 1.5
+    lat_r = int(lat)
+    lng_r = int(lng)
+    primary_code = f"{lat_r:02d}{lng_r-100:02d}"
+    if primary_code not in AVAILABLE_PRIMARY_CODES:
+        return None
+
+    lat = (lat - lat_r) * 8
+    lng = (lng - lng_r) * 8
+    lat_r = int(lat)
+    lng_r = int(lng)
+    secondary_code = primary_code + f"{lat_r}{lng_r}"
+
+    lat = (lat - lat_r) * 10
+    lng = (lng - lng_r) * 10
+    lat_r = int(lat)
+    lng_r = int(lng)
+    standard_code = secondary_code + f"{lat_r}{lng_r}"
+
+    lat = (lat - lat_r) * 2
+    lng = (lng - lng_r) * 2
+    lat_r = int(lat)
+    lng_r = int(lng)
+    suffix = 1 + lat_r * 2 + lng_r
+    half_code = standard_code + str(suffix)
+
+    lat = (lat - lat_r) * 2
+    lng = (lng - lng_r) * 2
+    lat_r = int(lat)
+    lng_r = int(lng)
+    suffix = 1 + lat_r * 2 + lng_r
+    quarter_code = half_code + str(suffix)
+
+    lat = (lat - lat_r) * 2
+    lng = (lng - lng_r) * 2
+    lat_r = int(lat)
+    lng_r = int(lng)
+    suffix = 1 + lat_r * 2 + lng_r
+    eighth_code = quarter_code + str(suffix)
+
+    return {
+        "primary": primary_code,
+        "secondary": secondary_code,
+        "standard": standard_code,
+        "half": half_code,
+        "quarter": quarter_code,
+        "eighth": eighth_code,
+    }
