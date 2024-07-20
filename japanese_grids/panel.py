@@ -1,4 +1,4 @@
-"""Coordinate Panel"""
+"""Panel to show the grid square code of the current mouse position."""
 
 # Copyright (C) 2023 MIERUNE Inc.
 #
@@ -17,10 +17,15 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import re
-from typing import Callable
 
-from qgis.core import QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsProject
-from qgis.gui import QgisInterface, QgsMapMouseEvent, QgsMapTool
+from qgis._gui import QgsMapCanvas
+from qgis.core import (
+    QgsCoordinateReferenceSystem,
+    QgsCoordinateTransform,
+    QgsPointXY,
+    QgsProject,
+)
+from qgis.gui import QgisInterface
 from qgis.PyQt.QtCore import Qt, QTimer
 from qgis.PyQt.QtWidgets import (
     QDockWidget,
@@ -34,37 +39,20 @@ from qgis.PyQt.QtWidgets import (
 from japanese_grids.algorithms.utils.gridsquare_to_box import lnglat_to_grid_square_code
 
 
-class MapMouseMoveTool(QgsMapTool):
-    def __init__(self, canvas, callback: Callable[[float, float], None]):
-        super().__init__(canvas)
-        self._canvas = canvas
-        self._callback = callback
-        self._pressed = False
-
-    def canvasPressEvent(self, event: QgsMapMouseEvent):
-        self._pressed = True
-
-    def canvasReleaseEvent(self, event: QgsMapMouseEvent):
-        self._pressed = False
-
-    def canvasMoveEvent(self, event: QgsMapMouseEvent):
-        if not self._pressed:
-            point = self.toMapCoordinates(event.pos())
-            self._callback(point.x(), point.y())
-
-
 class CoordinatePanel:
     def __init__(self, iface: QgisInterface):
         self._iface = iface
         self._setup()
         self._current_coord = None
+        self._dest_crs = QgsCoordinateReferenceSystem(6668)  # JGD 2011
 
-    def _handle_mousemove(self, x: float, y: float):
+    def _handle_mousemove(self, xy: QgsPointXY):
         canvas = self._iface.mapCanvas()
         source_crs = canvas.mapSettings().destinationCrs()
-        dest_crs = QgsCoordinateReferenceSystem(4326)  # WGS 84
-        transform = QgsCoordinateTransform(source_crs, dest_crs, QgsProject.instance())
-        geog_point = transform.transform(x, y)
+        transform = QgsCoordinateTransform(
+            source_crs, self._dest_crs, QgsProject.instance()
+        )
+        geog_point = transform.transform(xy)
         self._current_coord = geog_point
 
         (geog_lng, geog_lat) = (self._current_coord.x(), self._current_coord.y())
@@ -102,13 +90,9 @@ class CoordinatePanel:
 
         self._iface.addDockWidget(Qt.RightDockWidgetArea, self._dock_widget)
 
-        canvas = self._iface.mapCanvas()
-        self._maptool = MapMouseMoveTool(
-            self._iface.mapCanvas(), self._handle_mousemove
-        )
-        canvas.setMapTool(self._maptool)
+        canvas: QgsMapCanvas = self._iface.mapCanvas()
+        canvas.xyCoordinates.connect(self._handle_mousemove)
 
     def teardown(self):
         self._iface.removeDockWidget(self._dock_widget)
         del self._dock_widget
-        del self._maptool
