@@ -36,3 +36,9 @@ QGIS にデプロイする:
 ```console
 make deploy
 ```
+
+## Authors
+
+- MIERUNE Inc.
+- Taku Fukada ([@ciscorn](https://github.com/ciscorn)) - original author
+
