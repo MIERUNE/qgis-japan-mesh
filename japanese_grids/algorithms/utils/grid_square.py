@@ -295,6 +295,7 @@ def _iter_patch(  # noqa: C901
     half: bool = False,
     quarter: bool = False,
     eighth: bool = False,
+    m100: bool = False,
     double: bool = False,
     quintuple: bool = False,
 ) -> Iterator[tuple[str, str, LngLatBox]]:
@@ -302,7 +303,14 @@ def _iter_patch(  # noqa: C901
         if primary:
             yield ("primary", *primary_mesh_patch)
         if not (
-            secondary or standard or half or quarter or eighth or quintuple or double
+            secondary
+            or standard
+            or half
+            or quarter
+            or eighth
+            or m100
+            or quintuple
+            or double
         ):
             continue
 
@@ -324,13 +332,19 @@ def _iter_patch(  # noqa: C901
                 ):
                     yield ("double", *double_mesh_patch)
 
-            if not (standard or half or quarter or eighth):
+            if not (standard or half or quarter or eighth or m100):
                 continue
             for standard_mesh_patch in _iter_standard_mesh_patch(
                 secondary_mesh_patch, extent
             ):
                 if standard:
                     yield ("standard", *standard_mesh_patch)
+                if m100:
+                    for m100_mesh_patch in _iter_standard_mesh_patch(
+                        standard_mesh_patch, extent
+                    ):
+                        yield ("m100", *m100_mesh_patch)
+
                 if half or quarter or eighth:
                     for patch2 in _iter_subdivided_mesh_patch(
                         standard_mesh_patch, extent
@@ -356,6 +370,7 @@ def iter_patch(
     half: bool = False,
     quarter: bool = False,
     eighth: bool = False,
+    m100: bool = False,
     double: bool = False,
     quintuple: bool = False,
 ) -> Iterator[tuple[str, str, LngLatBox]]:
@@ -368,6 +383,7 @@ def iter_patch(
         half=half,
         quarter=quarter,
         eighth=eighth,
+        m100=m100,
         double=double,
         quintuple=quintuple,
     ):
@@ -392,6 +408,7 @@ def estimate_total_count(
     half: bool = False,
     quarter: bool = False,
     eighth: bool = False,
+    m100: bool = False,
     double: bool = False,
     quintuple: bool = False,
 ):
@@ -415,4 +432,6 @@ def estimate_total_count(
         c += num_primary * 64 * 100 * 4 * 4
     if eighth:
         c += num_primary * 64 * 100 * 4 * 4 * 4
+    if m100:
+        c += num_primary * 64 * 100 * 10 * 10
     return c

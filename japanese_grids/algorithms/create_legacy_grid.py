@@ -380,7 +380,7 @@ class CreateLegacyGridAlgorithm(QgsProcessingAlgorithm):
                 dest_ids[layer_kind_name] = dest_id
                 result[layer_kind["param"]] = dest_id
 
-                if layer_kind_name in ["quarter", "eighth"] and extent_bbox is None:
+                if layer_kind_name in ["lv1000", "lv500"] and extent_bbox is None:
                     raise QgsProcessingException(
                         "地図情報レベル 1000, 500 を出力する場合は、思わぬ大量の地物生成を防ぐため、メッシュの作成範囲を指定する必要があります。"
                     )

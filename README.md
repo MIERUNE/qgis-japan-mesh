@@ -17,9 +17,9 @@ A QGIS Plugin to handle common Japanese grid square codes — 日本で使われ
 
 プロセッシングツールボックスに追加される「地域メッシュ」メニュー、またはツールバー上のアイコンから呼び出して利用できます。
 
-機能の要望や問題点の報告を歓迎いたします。 GitHub の Issue にどうぞ。
+機能の要望や問題点の報告を歓迎いたします。GitHub の Issue にどうぞ。
 
-## Install (インストール)
+## Installation (インストール)
 
 本プラグインは QGIS Python Plugin Repository で公開されており、QGIS の「プラグインの管理とインストール」から &#8220;[Japanese Grid Mesh](https://plugins.qgis.org/plugins/japanese_grids/)&#8221; で検索してインストールできます。
 
@@ -27,9 +27,9 @@ A QGIS Plugin to handle common Japanese grid square codes — 日本で使われ
 
 ## License (ライセンス)
 
-License: GPL v2
+GPL v2
 
-## Development (開発)
+## Development
 
 QGIS にデプロイする:
 
@@ -37,8 +37,12 @@ QGIS にデプロイする:
 make deploy
 ```
 
-## Authors
+## Contributions
 
-- MIERUNE Inc.
-- Taku Fukada ([@ciscorn](https://github.com/ciscorn)) - original author
+機能の要望や問題点の報告を歓迎いたします。GitHub の Issue にどうぞ。
+
+### Authors
+
+- Taku Fukada ([@ciscorn](https://github.com/ciscorn)) - Original Author
+- And all contributors
 
