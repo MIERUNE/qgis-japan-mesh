@@ -132,6 +132,13 @@ _LAYERS = {
         "max_scale": 4000,
         "min_scale": 120000,
     },
+    "m100": {
+        "param": "OUTPUT_100M",
+        "default": False,
+        "label": _tr("100mメッシュ"),
+        "max_scale": 250,
+        "min_scale": 10000,
+    },
 }
 
 _CRS_SELECTION = [
@@ -249,9 +256,12 @@ class CreateGridSquareAlgorithm(QgsProcessingAlgorithm):
                 dest_ids[layer_kind_name] = dest_id
                 result[layer_kind["param"]] = dest_id
 
-                if layer_kind_name in ["quarter", "eighth"] and extent_bbox is None:
+                if (
+                    layer_kind_name in ["quarter", "eighth", "100m"]
+                    and extent_bbox is None
+                ):
                     raise QgsProcessingException(
-                        "1/4メッシュ、1/8メッシュを出力する場合は、思わぬ大量の地物生成を防ぐため、メッシュの作成範囲を指定する必要があります。"
+                        "1/2メッシュよりも細かいメッシュを出力する場合は、思わぬ大量の地物生成を防ぐため、メッシュの作成範囲を指定する必要があります。"
                     )
 
                 # Set post-processor
@@ -273,6 +283,7 @@ class CreateGridSquareAlgorithm(QgsProcessingAlgorithm):
             half="half" in sinks,
             quarter="quarter" in sinks,
             eighth="eighth" in sinks,
+            m100="m100" in sinks,
             double="double" in sinks,
             quintuple="quintuple" in sinks,
         )
@@ -285,6 +296,7 @@ class CreateGridSquareAlgorithm(QgsProcessingAlgorithm):
                 half="half" in sinks,
                 quarter="quarter" in sinks,
                 eighth="eighth" in sinks,
+                m100="m100" in sinks,
                 double="double" in sinks,
                 quintuple="quintuple" in sinks,
             )
