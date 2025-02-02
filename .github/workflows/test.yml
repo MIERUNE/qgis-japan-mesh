@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        qgis_image_tag: [release-3_28]
+        qgis_image_tag: [release-3_22, release-3_28]
     env:
       OS: ubuntu
       QGIS_IMAGE_TAG: ${{ matrix.qgis_image_tag }}
@@ -20,22 +20,27 @@ jobs:
       - name: Pull QGIS image
         run: docker pull qgis/qgis:${{ matrix.qgis_image_tag }}
 
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+          enable-cache: true
+
       - name: Export requirements.txt
         run: |
-          pip3 install poetry
-          poetry export --with dev -f requirements.txt -o requirements.txt
+          uv export --extra dev > requirements.txt
 
       - name: Run tests
         run: >
           docker run --rm --volume `pwd`:/app -w=/app qgis/qgis:${{ matrix.qgis_image_tag }} sh -c "
-            pip3 install -r requirements.txt &&
+            pip3 install --require-hashes --no-deps -r requirements.txt &&
             PYTHONPATH=/app xvfb-run -s '+extension GLX -screen 0 1024x768x24' pytest -v --cov --cov-report=xml --cov-report=term
           "
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
-          file: ./coverage.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
           flags: unittests
           env_vars: OS,QGIS_IMAGE_TAG
           fail_ci_if_error: false

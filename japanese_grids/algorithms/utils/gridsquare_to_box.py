@@ -96,7 +96,7 @@ def lnglat_to_grid_square_code(lng: float, lat: float) -> Optional[Codes]:
     lat *= 1.5
     lat_r = int(lat)
     lng_r = int(lng)
-    primary_code = f"{lat_r:02d}{lng_r-100:02d}"
+    primary_code = f"{lat_r:02d}{lng_r - 100:02d}"
     if primary_code not in AVAILABLE_PRIMARY_CODES:
         return None
 
