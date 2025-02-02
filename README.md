@@ -4,7 +4,7 @@
 
 [![Test](https://github.com/MIERUNE/qgis-japan-mesh/actions/workflows/test.yml/badge.svg)](https://github.com/MIERUNE/qgis-japan-mesh/actions/workflows/test.yml)
 
-A QGIS Plugin to handle common Japanese grid square codes — 日本で使われている「標準地域メッシュ」と「国土基本図図郭」を QGIS で扱うためのプラグインです。
+A QGIS Plugin to handle common Japanese grid squares — 日本で使われている「標準地域メッシュ」と「国土基本図図郭」を QGIS で扱うためのプラグインです。
 
 ![image](./docs/image.jpeg)
 
@@ -45,4 +45,3 @@ make deploy
 
 - Taku Fukada ([@ciscorn](https://github.com/ciscorn)) - Original Author
 - And all contributors
-
