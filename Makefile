@@ -1,6 +1,6 @@
 PACKAGE_NAME = japanese_grids
 
-# Use this Git ref for packaging
+# Use this tag for packaging
 VERSION = HEAD
 
 # Windows (OSGeo4W)
@@ -29,13 +29,13 @@ help:
 
 init:  ## Startup project
 ifeq ($(OS),Windows_NT)
-	$(QGIS_PYTHON) -m pip install poetry
-	$(QGIS_PYTHON) -m poetry config --local virtualenvs.in-project true
-	$(QGIS_PYTHON) -m poetry install
+	$(QGIS_PYTHON) -m pip install uv
+	$(QGIS_PYTHON) -m uv venv --python $(QGIS_PYTHON) --system-site-packages
+	$(QGIS_PYTHON) -m uv sync
 	$(QGIS_PYTHON) -c "import pathlib;import qgis;open('.venv/Lib/site-packages/qgis.pth', 'w').write(str((pathlib.Path(qgis.__file__)/'../..').resolve()) + '\n' + str((pathlib.Path(qgis.__file__)/'../../plugins').resolve()))"
 else
-	poetry env use $(QGIS_PYTHON)
-	poetry install
+	uv venv --python $(QGIS_PYTHON) --system-site-packages
+	uv sync
 	echo $(QGIS_STD_PLUGINS) > .venv/lib/python3.9/site-packages/qgis_std_plugins.pth
 endif
 
@@ -52,7 +52,7 @@ package:  ## Build zip package
 
 test:  ## Test
 ifeq ($(OS),Windows_NT)
-	$(QGIS_PYTHON) -m poetry run python -c "import os; os.add_dll_directory(r'${QGIS_DLL}'); import pytest; pytest.main('-v --cov --cov-report=term'.split())"
+	$(QGIS_PYTHON) -m uv run python -c "import os; os.add_dll_directory(r'${QGIS_DLL}'); import pytest; pytest.main('-v --cov --cov-report=term'.split())"
 else
-	poetry run pytest -v --cov --cov-report=term
+	uv run pytest -v --cov --cov-report=term
 endif
