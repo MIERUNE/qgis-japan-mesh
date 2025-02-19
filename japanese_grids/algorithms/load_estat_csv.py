@@ -187,6 +187,7 @@ class LoadEstatGridSquareStats(QgsProcessingAlgorithm):
 
         # TODO: refactor
 
+        num_gassan_idx = None
         with open(filename, encoding="cp932") as f:
             columns, aliases = _load_header(f)
             # Make fields
@@ -200,6 +201,10 @@ class LoadEstatGridSquareStats(QgsProcessingAlgorithm):
                 else:
                     field = QgsField(name, type=QVariant.Int)
                 fields.append(field)
+
+            if "GASSAN" in columns:
+                fields.append(QgsField("NUM_GASSAN", type=QVariant.Int))
+                num_gassan_idx = len(fields) - 1
 
             (sink, dest_id) = self.parameterAsSink(
                 parameters,
@@ -300,6 +305,9 @@ class LoadEstatGridSquareStats(QgsProcessingAlgorithm):
             elif len(geoms) > 1:
                 # 合算されている場合はジオメトリを合成
                 feat.setGeometry(QgsGeometry.unaryUnion(QgsGeometry(p) for p in geoms))
+
+            if merge_hitoku and num_gassan_idx is not None:
+                feat.setAttribute(num_gassan_idx, len(geoms))
 
             sink.addFeature(feat, QgsFeatureSink.FastInsert)
 
