@@ -1,6 +1,6 @@
 [general]
 name=Japanese Grid Mesh
-version=1.5.0
+version=1.6.0
 qgisMinimumVersion=3.6
 description=Create common grid squares used in Japan. 日本で使われている「標準地域メッシュ」および「国土基本図図郭」のポリゴンを作成できるほか、国勢調査や経済センサスなどの「地域メッシュ統計」のCSVファイルを読み込むこともできます。プロセッシングツールボックスから利用できます。また、地図キャンバス上のマウスカーソル位置の地域メッシュコードをリアルタイムに表示するパネルも搭載しています。
 author=MIERUNE Inc.
