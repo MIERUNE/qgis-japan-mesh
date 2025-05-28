@@ -18,8 +18,8 @@
 
 from pathlib import Path
 
-from PyQt5.QtGui import QIcon
 from qgis.core import QgsProcessingProvider
+from qgis.PyQt.QtGui import QIcon
 
 from .algorithms.create_grid_square import CreateGridSquareAlgorithm
 from .algorithms.create_legacy_grid import CreateLegacyGridAlgorithm

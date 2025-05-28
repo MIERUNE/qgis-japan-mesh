@@ -18,7 +18,6 @@
 
 from typing import Any, TextIO
 
-from PyQt5.QtCore import QCoreApplication, QVariant
 from qgis.core import (
     QgsCoordinateReferenceSystem,
     QgsFeature,
@@ -39,6 +38,7 @@ from qgis.core import (
     QgsProcessingParameterFile,
     QgsWkbTypes,
 )
+from qgis.PyQt.QtCore import QCoreApplication, QVariant
 
 from .utils.gridsquare_to_box import grid_square_code_to_bbox
 
