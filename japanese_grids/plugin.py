@@ -65,7 +65,7 @@ class JapanMeshPlugin:
         # ToolButton Menu
         menu = QMenu()
         tool_button.setMenu(menu)
-        tool_button.setPopupMode(QToolButton.MenuButtonPopup)
+        tool_button.setPopupMode(QToolButton.ToolButtonPopupMode.MenuButtonPopup)
 
         action_grid_square = QAction(
             icon, "地域メッシュを作成", self.iface.mainWindow()
