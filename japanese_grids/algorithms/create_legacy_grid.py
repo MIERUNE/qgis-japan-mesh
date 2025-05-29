@@ -18,7 +18,6 @@
 
 from typing import Any, List, TypedDict
 
-from PyQt5.QtCore import QCoreApplication, QVariant
 from qgis.core import (
     Qgis,
     QgsCoordinateReferenceSystem,
@@ -43,6 +42,7 @@ from qgis.core import (
     QgsVectorLayerSimpleLabeling,
     QgsWkbTypes,
 )
+from qgis.PyQt.QtCore import QCoreApplication, QVariant
 
 from .utils.legacy_grid import estimate_total_count, iter_patch
 

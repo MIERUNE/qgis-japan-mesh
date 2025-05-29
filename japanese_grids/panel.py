@@ -88,7 +88,9 @@ class CoordinatePanel:
         container.setMaximumHeight(layout.totalSizeHint().height())
         self._dock_widget.setWidget(container)
 
-        self._iface.addDockWidget(Qt.RightDockWidgetArea, self._dock_widget)
+        self._iface.addDockWidget(
+            Qt.DockWidgetArea.RightDockWidgetArea, self._dock_widget
+        )
 
         canvas: QgsMapCanvas = self._iface.mapCanvas()
         canvas.xyCoordinates.connect(self._handle_mousemove)

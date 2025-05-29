@@ -18,9 +18,9 @@
 
 import contextlib
 
-from PyQt5.QtWidgets import QAction, QMenu, QToolButton
 from qgis.core import QgsApplication
 from qgis.gui import QgisInterface
+from qgis.PyQt.QtWidgets import QAction, QMenu, QToolButton
 
 from .panel import CoordinatePanel
 from .provider import JapanMeshProcessingProvider
@@ -65,7 +65,7 @@ class JapanMeshPlugin:
         # ToolButton Menu
         menu = QMenu()
         tool_button.setMenu(menu)
-        tool_button.setPopupMode(QToolButton.MenuButtonPopup)
+        tool_button.setPopupMode(QToolButton.ToolButtonPopupMode.MenuButtonPopup)
 
         action_grid_square = QAction(
             icon, "地域メッシュを作成", self.iface.mainWindow()
