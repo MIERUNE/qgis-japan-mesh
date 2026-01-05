@@ -6,6 +6,8 @@
 
 A QGIS Plugin to handle common Japanese grid squares — 日本で使われている「標準地域メッシュ」と「国土基本図図郭」を QGIS で扱うためのプラグインです。
 
+紹介記事: https://qiita.com/ciscorn/items/dd610f673853f5c0f6dc
+
 ![image](./docs/image.jpeg)
 
 主な機能：
