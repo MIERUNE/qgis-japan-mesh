@@ -5,19 +5,19 @@ qgisMinimumVersion=3.6
 qgisMaximumVersion=4.99
 supportsQt6=True
 description=Create common grid squares used in Japan. 日本で使われている「標準地域メッシュ」および「国土基本図図郭」のポリゴンを作成できるほか、国勢調査や経済センサスなどの「地域メッシュ統計」のCSVファイルを読み込むこともできます。プロセッシングツールボックスから利用できます。また、地図キャンバス上のマウスカーソル位置の地域メッシュコードをリアルタイムに表示するパネルも搭載しています。
-author=MIERUNE Inc.
-email=info@mierune.co.jp
+author=Taku Fukada
+email=naninunenor@gmail.com
 
 about=Create common grid squares used in Japan. It supports the "Grid Square Code" (JIS X 0410) and "Kokudo Kihonzu Zukaku".
 
-repository=https://github.com/MIERUNE/qgis-japan-mesh
-tracker=https://github.com/MIERUNE/qgis-japan-mesh/issues
+repository=https://github.com/ciscorn/qgis-japan-mesh
+tracker=https://github.com/ciscorn/qgis-japan-mesh/issues
 
 hasProcessingProvider=yes
-changelog=https://github.com/MIERUNE/qgis-japan-mesh/releases
+changelog=https://github.com/ciscorn/qgis-japan-mesh/releases
 tags=python,processing
 
-homepage=https://github.com/MIERUNE/qgis-japan-mesh
+homepage=https://github.com/ciscorn/qgis-japan-mesh
 category=Plugins
 icon=icon.png
 experimental=False

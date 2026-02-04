@@ -2,7 +2,7 @@
 
 <p><img src="./japanese_grids/icon.png" width="32" alt="icon" /><p>
 
-[![Test](https://github.com/MIERUNE/qgis-japan-mesh/actions/workflows/test.yml/badge.svg)](https://github.com/MIERUNE/qgis-japan-mesh/actions/workflows/test.yml)
+[![Test](https://github.com/coscorn/qgis-japan-mesh/actions/workflows/test.yml/badge.svg)](https://github.com/ciscorn/qgis-japan-mesh/actions/workflows/test.yml)
 
 A QGIS Plugin to handle common Japanese grid squares — 日本で使われている「標準地域メッシュ」と「国土基本図図郭」を QGIS で扱うためのプラグインです。
 
